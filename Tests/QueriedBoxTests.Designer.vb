@@ -52,8 +52,6 @@ Partial Class QueriedBoxTests
         '
         Me.QueriedBox1.ConnectionString = Nothing
         Me.QueriedBox1.DbProvider = Nothing
-        Me.QueriedBox1.DecimalOnly = False
-        Me.QueriedBox1.DecimalPlaces = 2
         Me.QueriedBox1.Dependents.Add(Me.QueriedBox2)
         Me.QueriedBox1.DropDownAutoStretchRight = False
         Me.QueriedBox1.FieldHeader = "Patrimonio do Compressor"
@@ -72,8 +70,6 @@ Partial Class QueriedBoxTests
         '
         Me.QueriedBox2.ConnectionString = Nothing
         Me.QueriedBox2.DbProvider = Nothing
-        Me.QueriedBox2.DecimalOnly = False
-        Me.QueriedBox2.DecimalPlaces = 2
         Me.QueriedBox2.Dependents.Add(Me.QueriedBox1)
         Me.QueriedBox2.DropDownAutoStretchRight = False
         Me.QueriedBox2.FieldHeader = "Nome do Compressor"

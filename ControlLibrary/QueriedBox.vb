@@ -21,7 +21,7 @@ Imports System.Windows.Forms.Design
 '</system.data>
 #End Region
 Public Class QueriedBox
-    Inherits DecimalBox
+    Inherits TextBox
 #Region "EVENTS"
     <Category("Propriedade Alterada")>
     Public Event FreezedPrimaryKeyChanged(sender As Object, e As EventArgs)
@@ -52,11 +52,6 @@ Public Class QueriedBox
     Private _DropDownStretchRight As Integer
     Private _QueryEnabled As Boolean = True
     Private _DesignerHost As IDesignerHost
-#End Region
-#Region "CONSTRUCTOR"
-    Public Sub New()
-        DecimalOnly = False
-    End Sub
 #End Region
 #Region "OVERRIDED PROPERTIES"
     Public Overrides Property Multiline As Boolean
