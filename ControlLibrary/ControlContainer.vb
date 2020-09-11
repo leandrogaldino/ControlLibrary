@@ -51,7 +51,6 @@ Public Class ControlContainer
     End Property
     Public Overridable ReadOnly Property CanDrop As Boolean
         Get
-            If DropDownControl Is Nothing Then Return False
             If _DropDownContainer IsNot Nothing Then Return False
             If _DropDownContainer Is Nothing AndAlso _ClosedWhileInControl Then
                 _ClosedWhileInControl = False
@@ -123,6 +122,8 @@ Public Class ControlContainer
 #End Region
 #Region "PUBLIC SUBS"
     Public Sub ShowDropDown()
+        If HostControl Is Nothing Then Throw New Exception("O controle hospedeiro não foi definido.")
+        If DropDownControl Is Nothing Then Throw New Exception("O controle a ser hospedado não foi definido.")
         If Not CanDrop Then Return
         RaiseEvent Dropping(Me)
         _DropDownContainer = New DropDownContainer(_DropDownControl, DropDownBorderColor) With {
