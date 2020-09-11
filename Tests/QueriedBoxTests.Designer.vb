@@ -22,11 +22,10 @@ Partial Class QueriedBoxTests
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Dim Condition1 As ControlLibrary.QueriedBox.Condition = New ControlLibrary.QueriedBox.Condition()
         Dim OtherField1 As ControlLibrary.QueriedBox.OtherField = New ControlLibrary.QueriedBox.OtherField()
         Dim OtherField2 As ControlLibrary.QueriedBox.OtherField = New ControlLibrary.QueriedBox.OtherField()
         Me.Label1 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.QueriedBox1 = New ControlLibrary.QueriedBox()
         Me.QueriedBox2 = New ControlLibrary.QueriedBox()
         Me.SuspendLayout()
         '
@@ -39,38 +38,15 @@ Partial Class QueriedBoxTests
         Me.Label1.TabIndex = 1
         Me.Label1.Text = "Nome"
         '
-        'Label2
-        '
-        Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(256, 10)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(56, 13)
-        Me.Label2.TabIndex = 1
-        Me.Label2.Text = "Patrimônio"
-        '
-        'QueriedBox1
-        '
-        Me.QueriedBox1.ConnectionString = Nothing
-        Me.QueriedBox1.DbProvider = Nothing
-        Me.QueriedBox1.Dependents.Add(Me.QueriedBox2)
-        Me.QueriedBox1.DropDownAutoStretchRight = False
-        Me.QueriedBox1.FieldHeader = "Patrimonio do Compressor"
-        Me.QueriedBox1.JoinField = ""
-        Me.QueriedBox1.JoinPKField = ""
-        Me.QueriedBox1.JoinTable = ""
-        Me.QueriedBox1.Location = New System.Drawing.Point(259, 26)
-        Me.QueriedBox1.MainField = "NAME"
-        Me.QueriedBox1.MainPKField = "ID"
-        Me.QueriedBox1.MainTable = "PERSON"
-        Me.QueriedBox1.Name = "QueriedBox1"
-        Me.QueriedBox1.Size = New System.Drawing.Size(241, 20)
-        Me.QueriedBox1.TabIndex = 0
-        '
         'QueriedBox2
         '
+        Condition1.FieldName = "ID"
+        Condition1.Operator = "="
+        Condition1.TableName = "PERSONCOMPRESSOR"
+        Condition1.Value = "1"
+        Me.QueriedBox2.Conditions.Add(Condition1)
         Me.QueriedBox2.ConnectionString = Nothing
         Me.QueriedBox2.DbProvider = Nothing
-        Me.QueriedBox2.Dependents.Add(Me.QueriedBox1)
         Me.QueriedBox2.DropDownAutoStretchRight = False
         Me.QueriedBox2.FieldHeader = "Nome do Compressor"
         Me.QueriedBox2.JoinField = "NAME"
@@ -93,7 +69,7 @@ Partial Class QueriedBoxTests
         OtherField2.MainField = "PERSONID"
         Me.QueriedBox2.OtherFields.Add(OtherField1)
         Me.QueriedBox2.OtherFields.Add(OtherField2)
-        Me.QueriedBox2.Size = New System.Drawing.Size(241, 20)
+        Me.QueriedBox2.Size = New System.Drawing.Size(307, 20)
         Me.QueriedBox2.TabIndex = 0
         '
         'QueriedBoxTests
@@ -101,9 +77,7 @@ Partial Class QueriedBoxTests
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(759, 450)
-        Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.Label1)
-        Me.Controls.Add(Me.QueriedBox1)
         Me.Controls.Add(Me.QueriedBox2)
         Me.Name = "QueriedBoxTests"
         Me.Text = "QueriedBoxTexts"
@@ -113,6 +87,4 @@ Partial Class QueriedBoxTests
     End Sub
     Friend WithEvents QueriedBox2 As ControlLibrary.QueriedBox
     Friend WithEvents Label1 As Label
-    Friend WithEvents QueriedBox1 As ControlLibrary.QueriedBox
-    Friend WithEvents Label2 As Label
 End Class

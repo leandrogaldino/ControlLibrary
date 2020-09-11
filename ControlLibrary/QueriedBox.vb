@@ -652,67 +652,73 @@ Public Class QueriedBox
         Dim Row As Long
         If QueryEnabled Then
             If AllowHyperlink Then FormatTextBox(e.Control)
-            If DropDownResultsForm IsNot Nothing AndAlso DropDownResultsForm.DgvResults.SelectedRows.Count = 1 Then
-                Select Case e.KeyCode
-                    Case Is = Keys.Tab
-                        If DropDownResultsForm IsNot Nothing AndAlso DropDownResultsForm.DgvResults.SelectedRows.Count = 1 Then
-                            If UCase(Text) = UCase(DropDownResultsForm.DgvResults.SelectedRows(0).Cells(FieldHeader).Value.ToString) Then
-                                AutoFreeze()
+            If DropDownResultsForm IsNot Nothing Then
+                If DropDownResultsForm.DgvResults.SelectedRows.Count = 1 Then
+                    Select Case e.KeyCode
+                        Case Is = Keys.Tab
+                            If DropDownResultsForm IsNot Nothing AndAlso DropDownResultsForm.DgvResults.SelectedRows.Count = 1 Then
+                                If UCase(Text) = UCase(DropDownResultsForm.DgvResults.SelectedRows(0).Cells(FieldHeader).Value.ToString) Then
+                                    AutoFreeze()
+                                End If
                             End If
-                        End If
-                        CloseDropDown()
-                    Case Is = Keys.Enter
-                        AutoFreeze()
-                        Me.Select(TextLength, 0)
-                        CloseDropDown()
+                            CloseDropDown()
+                        Case Is = Keys.Enter
+                            AutoFreeze()
+                            Me.Select(TextLength, 0)
+                            CloseDropDown()
+                        Case Is = Keys.Down
+                            Row = DropDownResultsForm.DgvResults.SelectedRows(0).Index
+                            If DropDownResultsForm IsNot Nothing AndAlso DropDownResultsForm.DgvResults.Rows.Count > Row + 1 Then
+                                DropDownResultsForm.DgvResults.Rows(Row + 1).Selected = True
+                                If DropDownResultsForm.DgvResults.SelectedRows(0).Index = DropDownResultsForm.DgvResults.Rows.Count - 1 Then
+                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
+                                    Row += 1
+                                Else
+                                    Row += 2
+                                End If
+                                If DropDownResultsForm.DgvResults.Rows(Row).Displayed = False Then
+                                    If Row >= 3 Then
+                                        DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index - 2
+                                    End If
+                                End If
+                            End If
+                        Case Is = Keys.Up
+                            Row = DropDownResultsForm.DgvResults.SelectedRows(0).Index
+                            If DropDownResultsForm.DgvResults.Visible = True And Row > 0 Then
+                                DropDownResultsForm.DgvResults.Rows(Row - 1).Selected = True
+                                If DropDownResultsForm.DgvResults.Rows(Row - 1).Displayed = False Then
+                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
+                                End If
+                            End If
+                        Case Is = Keys.Home
+                            If DropDownResultsForm.DgvResults.Visible = True Then
+                                DropDownResultsForm.DgvResults.Rows(0).Selected = True
+                                If DropDownResultsForm.DgvResults.Rows(0).Displayed = False Then
+                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = 0
+                                End If
+                            End If
+                        Case Is = Keys.End
+                            If DropDownResultsForm.DgvResults.Visible = True Then
+                                DropDownResultsForm.DgvResults.Rows(DropDownResultsForm.DgvResults.Rows.Count - 1).Selected = True
+                                If DropDownResultsForm.DgvResults.SelectedRows(0).Index = DropDownResultsForm.DgvResults.Rows.Count - 1 Then
+                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
+                                    If DropDownResultsForm.DgvResults.Rows.Count > 1 Then Row += 1
+                                Else
+                                    Row += 2
+                                End If
+                                If DropDownResultsForm.DgvResults.Rows(Row).Displayed = False Then
+                                    If Row >= 3 Then
+                                        DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index - 2
+                                    End If
+                                End If
+                            End If
+                    End Select
+                End If
+                Select Case e.KeyCode
                     Case Is = Keys.Escape
                         CloseDropDown()
-                    Case Is = Keys.Down
-                        Row = DropDownResultsForm.DgvResults.SelectedRows(0).Index
-                        If DropDownResultsForm IsNot Nothing AndAlso DropDownResultsForm.DgvResults.Rows.Count > Row + 1 Then
-                            DropDownResultsForm.DgvResults.Rows(Row + 1).Selected = True
-                            If DropDownResultsForm.DgvResults.SelectedRows(0).Index = DropDownResultsForm.DgvResults.Rows.Count - 1 Then
-                                DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
-                                Row += 1
-                            Else
-                                Row += 2
-                            End If
-                            If DropDownResultsForm.DgvResults.Rows(Row).Displayed = False Then
-                                If Row >= 3 Then
-                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index - 2
-                                End If
-                            End If
-                        End If
-                    Case Is = Keys.Up
-                        Row = DropDownResultsForm.DgvResults.SelectedRows(0).Index
-                        If DropDownResultsForm.DgvResults.Visible = True And Row > 0 Then
-                            DropDownResultsForm.DgvResults.Rows(Row - 1).Selected = True
-                            If DropDownResultsForm.DgvResults.Rows(Row - 1).Displayed = False Then
-                                DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
-                            End If
-                        End If
-                    Case Is = Keys.Home
-                        If DropDownResultsForm.DgvResults.Visible = True Then
-                            DropDownResultsForm.DgvResults.Rows(0).Selected = True
-                            If DropDownResultsForm.DgvResults.Rows(0).Displayed = False Then
-                                DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = 0
-                            End If
-                        End If
-                    Case Is = Keys.End
-                        If DropDownResultsForm.DgvResults.Visible = True Then
-                            DropDownResultsForm.DgvResults.Rows(DropDownResultsForm.DgvResults.Rows.Count - 1).Selected = True
-                            If DropDownResultsForm.DgvResults.SelectedRows(0).Index = DropDownResultsForm.DgvResults.Rows.Count - 1 Then
-                                DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
-                                Row += 1
-                            Else
-                                Row += 2
-                            End If
-                            If DropDownResultsForm.DgvResults.Rows(Row).Displayed = False Then
-                                If Row >= 3 Then
-                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index - 2
-                                End If
-                            End If
-                        End If
+                    Case Is = Keys.Delete
+                        Text = Nothing
                 End Select
             End If
         End If
@@ -721,7 +727,7 @@ Public Class QueriedBox
         MyBase.OnKeyDown(e)
         If QueryEnabled Then
             Select Case e.KeyCode
-                Case Is = Keys.Enter
+                Case Is = Keys.Enter, Keys.Delete, Keys.Escape
                     e.SuppressKeyPress = True
                 Case Is = Keys.Down
                     e.Handled = True
@@ -1485,7 +1491,7 @@ Public Class QueriedBox
                 .AllowUserToOrderColumns = True,
                 .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells,
                 .BackgroundColor = Color.White,
-                .BorderStyle = Windows.Forms.BorderStyle.None,
+                .BorderStyle = BorderStyle.None,
                 .ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
                 .CellBorderStyle = If(_SearchBox.ShowVerticalGridLines, DataGridViewCellBorderStyle.Single, DataGridViewCellBorderStyle.SingleHorizontal),
                 .ColumnHeadersBorderStyle = If(_SearchBox.ShowVerticalGridLines, DataGridViewHeaderBorderStyle.Raised, DataGridViewCellBorderStyle.None),
