@@ -1,4 +1,5 @@
-﻿Imports System.Drawing
+﻿Imports System.Data.Common
+Imports System.Drawing
 Imports System.Windows.Forms
 
 Public Class Utility
@@ -15,4 +16,12 @@ Public Class Utility
         End If
         Return True
     End Function
+
+    Public Shared Sub DebugQuery(ByVal Command As DbCommand)
+        Dim Query As String = Command.CommandText
+        For Each Parameter As DbParameter In Command.Parameters
+            Query = Query.Replace(Parameter.ParameterName, "'" & Parameter.Value & "'")
+        Next
+        Debug.Print(Query)
+    End Sub
 End Class
