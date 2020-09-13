@@ -111,6 +111,10 @@ Public Class ImagePicker
     End Class
     Public Class ImageInfoCollection
         Inherits Collection(Of ImageInfo)
+        Private _Parent As ImagePicker
+        Public Sub New(ByVal Parent As ImagePicker)
+            _Parent = Parent
+        End Sub
         Protected Overrides Sub RemoveItem(index As Integer)
             Dim CountIndex As Integer = Items.Count
             Dim RemovingIndex As Integer = index
@@ -145,6 +149,24 @@ Public Class ImagePicker
 
 
         End Sub
+
+        Protected Overrides Sub InsertItem(index As Integer, item As ImageInfo)
+            MyBase.InsertItem(index, item)
+            Dim Count As Integer = _Parent.ImagesInfo.Count - 1
+
+            If Count < _Parent.ImagesInfo.Count - 1 Then
+                If _Parent.GetSelectedImageIndex() = -1 Then
+                    _Parent.SetSelectedImageIndex(0)
+                Else
+                    _Parent.SetSelectedImageIndex(Count + 1)
+                End If
+            End If
+            _Parent.PnImage.BackgroundImage = _Parent.GetCopyImage(_Parent.GetSelectedImageLocation)
+            _Parent.RefreshNavigation()
+
+
+        End Sub
+
         'Friend Sub SetSelectedIndex(ByVal Index As Integer)
         '    For i = 0 To Items.Count - 1
         '        If i = Index Then
@@ -185,7 +207,7 @@ Public Class ImagePicker
     Public Event ImageExported(sender As Object)
     Public Event ImageRemoved(sender As Object)
     Public Property AcceptRepeatedFileNames As Boolean
-    Public Property ImagesInfo As New ImageInfoCollection
+    Public Property ImagesInfo As New ImageInfoCollection(Me)
     Public Property ShowImageNameToolTip As Boolean = False
     Public Property BorderStyle As BorderStyle
         Get
@@ -293,7 +315,7 @@ Public Class ImagePicker
                 '    BtnInclude.Enabled = True
                 'End If
 
-                RaiseEvent ImageIncluded(Me)
+                RaiseEvent ImageRemoved(Me)
                 Exit For
             End If
         Next Info

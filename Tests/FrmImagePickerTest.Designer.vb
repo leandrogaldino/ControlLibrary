@@ -22,28 +22,47 @@ Partial Class FrmImagePickerTest
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
-        Me.Panel1 = New System.Windows.Forms.Panel()
+        Dim MenuBarIcons1 As ControlLibrary.ImagePicker.MenuBarIcons = New ControlLibrary.ImagePicker.MenuBarIcons()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FrmImagePickerTest))
+        Dim NavigationBarIcons1 As ControlLibrary.ImagePicker.NavigationBarIcons = New ControlLibrary.ImagePicker.NavigationBarIcons()
+        Me.ImagePicker1 = New ControlLibrary.ImagePicker()
         Me.SuspendLayout()
         '
-        'TextBox1
+        'ImagePicker1
         '
-        Me.TextBox1.BackColor = System.Drawing.Color.Red
-        Me.TextBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.TextBox1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.TextBox1.Location = New System.Drawing.Point(0, 0)
-        Me.TextBox1.Multiline = True
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.Size = New System.Drawing.Size(689, 310)
-        Me.TextBox1.TabIndex = 0
-        '
-        'Panel1
-        '
-        Me.Panel1.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.Panel1.Location = New System.Drawing.Point(0, 310)
-        Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(689, 103)
-        Me.Panel1.TabIndex = 1
+        Me.ImagePicker1.AcceptRepeatedFileNames = False
+        Me.ImagePicker1.BarsDelay = 300
+        Me.ImagePicker1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.ImagePicker1.CounterBar.BackColor = System.Drawing.Color.Gainsboro
+        Me.ImagePicker1.CounterBar.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold)
+        Me.ImagePicker1.CounterBar.ForeColor = System.Drawing.Color.SteelBlue
+        Me.ImagePicker1.CounterBar.Format = "#/#"
+        Me.ImagePicker1.CounterBar.Visible = True
+        Me.ImagePicker1.ImageSizeMode = System.Windows.Forms.ImageLayout.Zoom
+        Me.ImagePicker1.Location = New System.Drawing.Point(41, 12)
+        Me.ImagePicker1.MaximumImageNumber = 100
+        Me.ImagePicker1.MenuBar.BackColor = System.Drawing.Color.Gainsboro
+        MenuBarIcons1.Include = CType(resources.GetObject("MenuBarIcons1.Include"), System.Drawing.Image)
+        MenuBarIcons1.Remove = CType(resources.GetObject("MenuBarIcons1.Remove"), System.Drawing.Image)
+        MenuBarIcons1.Save = CType(resources.GetObject("MenuBarIcons1.Save"), System.Drawing.Image)
+        Me.ImagePicker1.MenuBar.Icons = MenuBarIcons1
+        Me.ImagePicker1.MenuBar.MouseDownBackColor = System.Drawing.Color.SteelBlue
+        Me.ImagePicker1.MenuBar.MouseOverBackColor = System.Drawing.Color.SkyBlue
+        Me.ImagePicker1.MinimumSize = New System.Drawing.Size(120, 120)
+        Me.ImagePicker1.Name = "ImagePicker1"
+        Me.ImagePicker1.NavigationBar.BackColor = System.Drawing.Color.Gainsboro
+        NavigationBarIcons1.First = CType(resources.GetObject("NavigationBarIcons1.First"), System.Drawing.Image)
+        NavigationBarIcons1.Last = CType(resources.GetObject("NavigationBarIcons1.Last"), System.Drawing.Image)
+        NavigationBarIcons1.Next = CType(resources.GetObject("NavigationBarIcons1.Next"), System.Drawing.Image)
+        NavigationBarIcons1.Previous = CType(resources.GetObject("NavigationBarIcons1.Previous"), System.Drawing.Image)
+        Me.ImagePicker1.NavigationBar.Icons = NavigationBarIcons1
+        Me.ImagePicker1.NavigationBar.MouseDownBackColor = System.Drawing.Color.SteelBlue
+        Me.ImagePicker1.NavigationBar.MouseOverBackColor = System.Drawing.Color.SkyBlue
+        Me.ImagePicker1.NavigationBar.Visible = True
+        Me.ImagePicker1.ShowImageNameToolTip = False
+        Me.ImagePicker1.Size = New System.Drawing.Size(577, 250)
+        Me.ImagePicker1.TabIndex = 0
+        Me.ImagePicker1.Text = "ImagePicker1"
         '
         'FrmImagePickerTest
         '
@@ -51,14 +70,11 @@ Partial Class FrmImagePickerTest
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(689, 413)
-        Me.Controls.Add(Me.TextBox1)
-        Me.Controls.Add(Me.Panel1)
+        Me.Controls.Add(Me.ImagePicker1)
         Me.Name = "FrmImagePickerTest"
         Me.ResumeLayout(False)
-        Me.PerformLayout()
 
     End Sub
 
-    Friend WithEvents TextBox1 As TextBox
-    Friend WithEvents Panel1 As Panel
+    Friend WithEvents ImagePicker1 As ControlLibrary.ImagePicker
 End Class
