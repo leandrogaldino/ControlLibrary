@@ -690,36 +690,33 @@ Public Class QueriedBox
                                     DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
                                 End If
                             End If
-                        Case Is = Keys.Home
-                            If DropDownResultsForm.DgvResults.Visible = True Then
-                                DropDownResultsForm.DgvResults.Rows(0).Selected = True
-                                If DropDownResultsForm.DgvResults.Rows(0).Displayed = False Then
-                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = 0
-                                End If
-                            End If
-                        Case Is = Keys.End
-                            If DropDownResultsForm.DgvResults.Visible = True Then
-                                DropDownResultsForm.DgvResults.Rows(DropDownResultsForm.DgvResults.Rows.Count - 1).Selected = True
-                                If DropDownResultsForm.DgvResults.SelectedRows(0).Index = DropDownResultsForm.DgvResults.Rows.Count - 1 Then
-                                    DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
-                                    If DropDownResultsForm.DgvResults.Rows.Count > 1 Then Row += 1
-                                Else
-                                    Row += 2
-                                End If
-                                If DropDownResultsForm.DgvResults.Rows(Row).Displayed = False Then
-                                    If Row >= 3 Then
-                                        DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index - 2
-                                    End If
-                                End If
-                            End If
+                            'Case Is = Keys.Home
+                            '    If DropDownResultsForm.DgvResults.Visible = True Then
+                            '        DropDownResultsForm.DgvResults.Rows(0).Selected = True
+                            '        If DropDownResultsForm.DgvResults.Rows(0).Displayed = False Then
+                            '            DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = 0
+                            '        End If
+                            '    End If
+                            'Case Is = Keys.End
+                            '    If DropDownResultsForm.DgvResults.Visible = True Then
+                            '        DropDownResultsForm.DgvResults.Rows(DropDownResultsForm.DgvResults.Rows.Count - 1).Selected = True
+                            '        If DropDownResultsForm.DgvResults.SelectedRows(0).Index = DropDownResultsForm.DgvResults.Rows.Count - 1 Then
+                            '            DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index
+                            '            If DropDownResultsForm.DgvResults.Rows.Count > 1 Then Row += 1
+                            '        Else
+                            '            Row += 2
+                            '        End If
+                            '        If DropDownResultsForm.DgvResults.Rows(Row).Displayed = False Then
+                            '            If Row >= 3 Then
+                            '                DropDownResultsForm.DgvResults.FirstDisplayedScrollingRowIndex = DropDownResultsForm.DgvResults.SelectedRows(0).Index - 2
+                            '            End If
+                            '        End If
+                            '    End If
                     End Select
                 End If
-                Select Case e.KeyCode
-                    Case Is = Keys.Escape
-                        CloseDropDown()
-                    Case Is = Keys.Delete
-                        Text = Nothing
-                End Select
+
+                If e.KeyCode = Keys.Escape Then CloseDropDown()
+
             End If
         End If
     End Sub
@@ -727,14 +724,12 @@ Public Class QueriedBox
         MyBase.OnKeyDown(e)
         If QueryEnabled Then
             Select Case e.KeyCode
-                Case Is = Keys.Enter, Keys.Delete, Keys.Escape
+                Case Is = Keys.Enter, Keys.Escape
                     e.SuppressKeyPress = True
                 Case Is = Keys.Down
                     e.Handled = True
                 Case Is = Keys.Up
                     e.Handled = True
-                Case Is = Keys.Home, Keys.End
-                    If DropDownResultsForm IsNot Nothing AndAlso DropDownResultsForm.DgvResults.SelectedRows.Count = 1 Then e.Handled = True
             End Select
         End If
     End Sub
@@ -769,7 +764,7 @@ Public Class QueriedBox
                 Query = String.Format("SELECT {0}.{1} FROM {2} WHERE {3}.ID = @ID", MainTable, MainField, MainTable, MainTable)
             Else
                 Query = String.Format("SELECT {0}.{1} FROM {2} JOIN {3} ON {4}.{5} = {6}.{7} WHERE {8}.ID = @ID", JoinTable, JoinField,
-                                      MainTable, JoinTable, JoinTable, JoinPKField, MainTable, MainPKField, MainTable)
+                                      MainTable, JoinTable, JoinTable, JoinPKField, MainTable, MainField, MainTable)
             End If
             TableResults = ExecuteQuery(Query, New Dictionary(Of String, Object) From {{"@ID", ID}})
             If TableResults.Rows.Count = 1 Then
@@ -789,7 +784,7 @@ Public Class QueriedBox
                         Else
                             Query = String.Format("SELECT {0}.{1} FROM {2} JOIN {3} ON {4}.{5} = {6}.{7} WHERE {8}.ID = @ID", Dependents(i).JoinTable, Dependents(i).JoinField,
                                       Dependents(i).MainTable, Dependents(i).JoinTable, Dependents(i).JoinTable, Dependents(i).JoinPKField, Dependents(i).MainTable,
-                                      Dependents(i).MainPKField, Dependents(i).MainTable)
+                                      Dependents(i).MainField, Dependents(i).MainTable)
                         End If
                         TableResults = ExecuteQuery(Query, New Dictionary(Of String, Object) From {{"@ID", ID}})
                         If TableResults.Rows.Count = 1 Then
@@ -1010,8 +1005,10 @@ Public Class QueriedBox
         Timer.Interval = QueryInterval
         Timer.Stop()
         ValidateTick()
+
         FullQuery.Add(String.Format("SELECT {0}.{1} AS 'MAINID',", MainTable, MainPKField))
         If JoinTable = Nothing Then
+
             FullQuery.Add(String.Format("{0}.{1} AS '{2}'", MainTable, MainField, If(FieldHeader = Nothing, MainField, FieldHeader)))
         Else
             FullQuery.Add(String.Format("{0}.{1} AS '{2}'", JoinTable, JoinField, If(FieldHeader = Nothing, JoinField, FieldHeader)))
@@ -1302,27 +1299,27 @@ Public Class QueriedBox
         ''' <summary>
         ''' Define o nome do campo a ser pesquisado.
         ''' </summary>
-        <Description("Define o nome do campo a ser pesquisado.")>
+                                                                                                                            <Description("Define o nome do campo a ser pesquisado.")>
         Public Property MainField As String
         ''' <summary>
         ''' Define o apelido do campo a ser pesquisado (substitui o nome do campo no título dos resultados).
         ''' </summary>
-        <Description("Define o apelido do campo a ser pesquisado (substitui o nome do campo no título dos resultados).")>
+                                                                                                                                <Description("Define o apelido do campo a ser pesquisado (substitui o nome do campo no título dos resultados).")>
         Public Property FieldHeader As String
         ''' <summary>
         ''' Define o nome do campo a ser retornado referente ao campo da tabela principal.
         ''' </summary>
-        <Description("Define o nome do campo a ser retornado referente ao campo da tabela principal.")>
+                                                                                                                                    <Description("Define o nome do campo a ser retornado referente ao campo da tabela principal.")>
         Public Property JoinField As String
         ''' <summary>
         ''' Define o nome do campo da tabela que está atribuído como PRIMARYKEY.
         ''' </summary>
-        <Description("Define o nome do campo da tabela que está atribuído como PRIMARYKEY.")>
+                                                                                                                                        <Description("Define o nome do campo da tabela que está atribuído como PRIMARYKEY.")>
         Public Property JoinPKField As String
         ''' <summary>
         ''' Define o nome da tabela a ser combinada com a tabela principal.
         ''' </summary>
-        <Description("Define o nome da tabela a ser combinada com a tabela principal.")>
+                                                                                                                                            <Description("Define o nome da tabela a ser combinada com a tabela principal.")>
         Public Property JoinTable As String
         Public Sub New()
         End Sub
@@ -1365,12 +1362,12 @@ Public Class QueriedBox
         ''' <summary>
         ''' Define o nome do parâmetro utilizado na Query.
         ''' </summary>
-        <Description("Define o nome do parâmetro utilizado nas condições da Query.")>
+                                                                                                                                                                                        <Description("Define o nome do parâmetro utilizado nas condições da Query.")>
         Public Property ParameterName As String
         ''' <summary>
         ''' Define o valor do parâmetro utilizado na Query.
         ''' </summary>
-        <Description("Define o valor do parâmetro utilizado nas condições da Query.")>
+                                                                                                                                                                                            <Description("Define o valor do parâmetro utilizado nas condições da Query.")>
         Public Property ParameterValue As String
         Public Sub New()
         End Sub
@@ -1396,29 +1393,29 @@ Public Class QueriedBox
                 ">=",
                 "<",
                 "<=",
-                "BETWEEN",
-                "LIKE"
+                " BETWEEN",
+                " LIKE"
             }
         ''' <summary>
         ''' Define o nome do campo do banco de dados onde será aplicada a condição.
         ''' </summary>
-        <Description("Define o nome do campo do banco de dados onde será aplicada a condição.")>
+                                                                                                                                                                                                                    <Description("Define o nome do campo do banco de dados onde será aplicada a condição.")>
         Public Property TableName As String
         ''' <summary>
         ''' Define o nome do campo do banco de dados onde será aplicada a condição.
         ''' </summary>
-        <Description("Define o nome do campo do banco de dados onde será aplicada a condição.")>
+                                                                                                                                                                                                                        <Description("Define o nome do campo do banco de dados onde será aplicada a condição.")>
         Public Property FieldName As String
         ''' <summary>
         ''' Define o operador da condição. Para o operador BETWEEN, separar os dois valores por ponto e vírgula (;).
         ''' </summary>
-        <Description("Define o operador da condição. Para o operador BETWEEN, separar os dois valores por ponto e vírgula (;).")>
-        <TypeConverter(GetType(OperatorFilterCollection))>
+                                                                                                                                                                                                                            <Description("Define o operador da condição. Para o operador BETWEEN, separar os dois valores por ponto e vírgula (;).")>
+                                                                                                                                                                                                                                <TypeConverter(GetType(OperatorFilterCollection))>
         Public Property [Operator] As String
         ''' <summary>
         ''' Define o valor a ser testado na condição.
         ''' </summary>
-        <Description("Define o valor a ser testado na condição.")>
+                                                                                                                                                                                                                                    <Description("Define o valor a ser testado na condição.")>
         Public Property Value As String
         Public Sub New()
         End Sub
@@ -2156,8 +2153,8 @@ Public Class QueriedBox
             List.BorderStyle = Windows.Forms.BorderStyle.FixedSingle
             List.CheckOnClick = True
             List.Height = 200
-            If CheckControlWidth < 400 Then
-                List.Width = CheckControlWidth
+            If CheckControlWidth <400 Then
+                List.Width= CheckControlWidth
             End If
             Return List
         End Function

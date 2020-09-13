@@ -22,7 +22,6 @@ Partial Class QueriedBoxTests
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim Condition1 As ControlLibrary.QueriedBox.Condition = New ControlLibrary.QueriedBox.Condition()
         Dim OtherField1 As ControlLibrary.QueriedBox.OtherField = New ControlLibrary.QueriedBox.OtherField()
         Dim OtherField2 As ControlLibrary.QueriedBox.OtherField = New ControlLibrary.QueriedBox.OtherField()
         Me.Label1 = New System.Windows.Forms.Label()
@@ -40,11 +39,6 @@ Partial Class QueriedBoxTests
         '
         'QueriedBox2
         '
-        Condition1.FieldName = "ID"
-        Condition1.Operator = "="
-        Condition1.TableName = "PERSONCOMPRESSOR"
-        Condition1.Value = "1"
-        Me.QueriedBox2.Conditions.Add(Condition1)
         Me.QueriedBox2.ConnectionString = Nothing
         Me.QueriedBox2.DbProvider = Nothing
         Me.QueriedBox2.DropDownAutoStretchRight = False
@@ -52,7 +46,7 @@ Partial Class QueriedBoxTests
         Me.QueriedBox2.JoinField = "NAME"
         Me.QueriedBox2.JoinPKField = "ID"
         Me.QueriedBox2.JoinTable = "COMPRESSOR"
-        Me.QueriedBox2.Location = New System.Drawing.Point(12, 26)
+        Me.QueriedBox2.Location = New System.Drawing.Point(87, 51)
         Me.QueriedBox2.MainField = "COMPRESSORID"
         Me.QueriedBox2.MainPKField = "ID"
         Me.QueriedBox2.MainTable = "PERSONCOMPRESSOR"
