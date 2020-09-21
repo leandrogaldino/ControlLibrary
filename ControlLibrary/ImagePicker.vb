@@ -161,6 +161,11 @@ Public Class ImagePicker
                     _Parent.SetSelectedImageIndex(Count + 1)
                 End If
             End If
+
+            If _Parent.ImagesInfo.Count = 1 Then _Parent.ImagesInfo(0).Selected = True
+            If _Parent.ImagesInfo.Count > 1 Then _Parent.ImagesInfo(_Parent.ImagesInfo.Count - 1).Selected = True
+
+
             _Parent.PnImage.BackgroundImage = _Parent.GetCopyImage(_Parent.GetSelectedImageLocation)
             _Parent.RefreshNavigation()
 
@@ -261,9 +266,9 @@ Public Class ImagePicker
         If OfdImage.ShowDialog = DialogResult.OK Then
             For Each FileName In OfdImage.FileNames
                 If AcceptRepeatedFileNames Then
-
                     If ImagesInfo.Count < MaximumImageNumber Then
                         ImagesInfo.Add(New ImageInfo With {.Location = FileName})
+
                     End If
                 Else
                     If Not ImagesInfo.Any(Function(x) x.Location = FileName) Then

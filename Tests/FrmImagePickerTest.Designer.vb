@@ -39,7 +39,7 @@ Partial Class FrmImagePickerTest
         Me.ImagePicker1.CounterBar.Format = "#/#"
         Me.ImagePicker1.CounterBar.Visible = True
         Me.ImagePicker1.ImageSizeMode = System.Windows.Forms.ImageLayout.Zoom
-        Me.ImagePicker1.Location = New System.Drawing.Point(41, 12)
+        Me.ImagePicker1.Location = New System.Drawing.Point(12, 12)
         Me.ImagePicker1.MaximumImageNumber = 100
         Me.ImagePicker1.MenuBar.BackColor = System.Drawing.Color.Gainsboro
         MenuBarIcons1.Include = CType(resources.GetObject("MenuBarIcons1.Include"), System.Drawing.Image)
@@ -60,7 +60,7 @@ Partial Class FrmImagePickerTest
         Me.ImagePicker1.NavigationBar.MouseOverBackColor = System.Drawing.Color.SkyBlue
         Me.ImagePicker1.NavigationBar.Visible = True
         Me.ImagePicker1.ShowImageNameToolTip = False
-        Me.ImagePicker1.Size = New System.Drawing.Size(577, 250)
+        Me.ImagePicker1.Size = New System.Drawing.Size(352, 248)
         Me.ImagePicker1.TabIndex = 0
         Me.ImagePicker1.Text = "ImagePicker1"
         '
