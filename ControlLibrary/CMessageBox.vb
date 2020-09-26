@@ -477,17 +477,17 @@ Public Class CMessageBox
     End Sub
     Private Shared Sub TxtStepEmailPhone_TextChanged(sender As Object, e As EventArgs) Handles TxtSteps.TextChanged, TxtEmail.TextChanged, TxtPhone.TextChanged
         If TxtSteps.Text = Nothing Then
-            BtnExSave.Enabled = False
-            BtnExEmail.Enabled = False
+            If BtnExSave IsNot Nothing Then BtnExSave.Enabled = False
+            If BtnExEmail IsNot Nothing Then BtnExEmail.Enabled = False
         Else
             If TxtEmail.Text = Nothing And TxtPhone.Text = Nothing Then
-                BtnExSave.Enabled = False
-                BtnExEmail.Enabled = False
+                If BtnExSave IsNot Nothing Then BtnExSave.Enabled = False
+                If BtnExEmail IsNot Nothing Then BtnExEmail.Enabled = False
             Else
-                BtnExSave.Enabled = True
-                BtnExEmail.Enabled = True
+                    If BtnExSave IsNot Nothing Then BtnExSave.Enabled = True
+                If BtnExEmail IsNot Nothing Then BtnExEmail.Enabled = True
             End If
-        End If
+            End If
     End Sub
     Private Shared Sub UcBtnEmail_Click(sender As Object, e As EventArgs) Handles BtnExEmail.Click
         Dim Mail As New MailMessage
@@ -502,6 +502,7 @@ Public Class CMessageBox
                 Mail.Body = GetMailMessage()
                 SmtpMailServer.Send(Mail)
                 CcContainer.DropDownControl.Cursor = Cursors.Default
+                MsgBox("E-Mail Enviado.")
             Catch ex As Exception
                 MsgBox(ex.Message)
             Finally
