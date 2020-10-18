@@ -999,26 +999,22 @@ Public Class QueriedBox
     Private Sub Timer_Tick(sender As Object, e As EventArgs) Handles Timer.Tick
         Dim FullQuery As New List(Of String)
         Dim Joins As New List(Of String)
-        Dim TableResults As New DataTable
+        Dim TableResults As DataTable
         Dim Param As New Dictionary(Of String, Object)
-        Dim IsParameter As Boolean = False
+        'Dim IsParameter As Boolean
         Timer.Interval = QueryInterval
         Timer.Stop()
         ValidateTick()
-
         FullQuery.Add(String.Format("SELECT {0}.{1} AS 'MAINID',", MainTable, MainPKField))
         If JoinTable = Nothing Then
-
             FullQuery.Add(String.Format("{0}.{1} AS '{2}'", MainTable, MainField, If(FieldHeader = Nothing, MainField, FieldHeader)))
         Else
             FullQuery.Add(String.Format("{0}.{1} AS '{2}'", JoinTable, JoinField, If(FieldHeader = Nothing, JoinField, FieldHeader)))
             Joins.Add(String.Format("JOIN {0} ON {1}.{2} = {3}.{4}", JoinTable, JoinTable, JoinPKField, MainTable, MainField))
         End If
-
         If Dependents.Count > 0 Or OtherFields.Count > 0 Then
             FullQuery(FullQuery.Count - 1) += ","
         End If
-
         For i = 0 To Dependents.Count - 1
             If Dependents(i).JoinTable = Nothing Then
                 FullQuery.Add(String.Format("{0}.{1} AS '{2}'", Dependents(i).MainTable, Dependents(i).MainField, If(Dependents(i).FieldHeader = Nothing, Dependents(i).MainField, Dependents(i).FieldHeader)))
@@ -1029,8 +1025,7 @@ Public Class QueriedBox
             If (i <> Dependents.Count - 1) Or (i = Dependents.Count - 1 And OtherFields.Count > 0) Then
                 FullQuery(FullQuery.Count - 1) += ","
             End If
-        Next
-
+        Next i
         For i = 0 To OtherFields.Count - 1
             If OtherFields(i).JoinTable = Nothing Then
                 FullQuery.Add(String.Format("{0}.{1} AS '{2}'", MainTable, OtherFields(i).MainField, If(OtherFields(i).FieldHeader = Nothing, OtherFields(i).MainField, OtherFields(i).FieldHeader)))
@@ -1047,34 +1042,29 @@ Public Class QueriedBox
         For i = 0 To Joins.Count - 1
             FullQuery.Add(Joins(i))
         Next i
-
-
         If JoinTable = Nothing Then
 
             FullQuery.Add(String.Format("WHERE {0}.{1} LIKE @VALUE", MainTable, MainField))
         Else
-
             FullQuery.Add(String.Format("WHERE {0}.{1} LIKE @VALUE", JoinTable, JoinField))
         End If
-
-
-
         'nao pode usar os parametros reservados, impedir que o usuario utilize
         For i = 0 To Conditions.Count - 1
             For j = 0 To Parameters.Count - 1
                 If Conditions(i).Operator = "BETWEEN" Then
                     If Conditions(i).Value <> Nothing Then
-                        If Conditions(i).Value.Split(";").ElementAt(0) = Parameters(j).ParameterName Or Conditions(i).Value.Split(";").ElementAt(1) = Parameters(j).ParameterName Then
-                            IsParameter = True
-                        End If
+                        'provavelmente nao precisa desse codigo
+                        'If Conditions(i).Value.Split(";").ElementAt(0) = Parameters(j).ParameterName Or Conditions(i).Value.Split(";").ElementAt(1) = Parameters(j).ParameterName Then
+                        '    IsParameter = True
+                        'End If
                     End If
                 Else
-                    If Conditions(i).Value = Parameters(j).ParameterName Then
-                        IsParameter = True
-                    End If
+                    'provavelmente nao precisa desse codigo
+                    'If Conditions(i).Value = Parameters(j).ParameterName Then
+                    '    IsParameter = True
+                    'End If
                 End If
             Next j
-
             If Conditions(i).Operator = "BETWEEN" Then
                 If Conditions(i).Value = Nothing Then
                     FullQuery.Add(String.Format("AND {0}.{1} {2} {3} AND {4}", Conditions(i).TableName, Conditions(i).FieldName, Conditions(i).Operator, Nothing, Nothing))
@@ -1086,6 +1076,8 @@ Public Class QueriedBox
             End If
         Next i
         FullQuery.Add(String.Format("LIMIT {0}", Limit))
+
+        'Retirar as % para pesquisa mais especifica.
         Param.Add("@VALUE", Text & "%")
         For i = 0 To Parameters.Count - 1
             Param.Add(Parameters(i).ParameterName, Parameters(i).ParameterValue)
