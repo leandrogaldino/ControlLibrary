@@ -3,6 +3,12 @@ Imports System.Drawing
 Imports System.Windows.Forms
 
 Public Class Utility
+    ''' <summary>
+    ''' Retorna se o controle especificado esta totalmente visível em seu controle pai.
+    ''' </summary>
+    ''' <param name="Parent">O controle pai.</param>
+    ''' <param name="Child">O controle a ser testado.</param>
+    ''' <returns></returns>
     Public Shared Function IsControlFullyVisible(ByVal Parent As Control, ByVal Child As Control) As Boolean
         Dim myBounds As Rectangle = Parent.ClientRectangle
         If Not myBounds.Contains(Child.Location) Then
@@ -16,17 +22,31 @@ Public Class Utility
         End If
         Return True
     End Function
-    Public Shared Function RecolorImage(ByVal Image As Image, ByVal FromColor As Color, ByVal ToColor As Color) As Bitmap
+    ''' <summary>
+    ''' Altera uma cor por outra na imagem.
+    ''' </summary>
+    ''' <param name="Image">A imagem a ser recolorida.</param>
+    ''' <param name="FromColor">A cor na imagem a ser substituida.</param>
+    ''' <param name="ToColor">A cor que deverá substituir a cor antiga.</param>
+    ''' <returns></returns>
+    Public Shared Function GetRecoloredImage(ByVal Image As Image, ByVal FromColor As Integer, ByVal ToColor As Integer) As Bitmap
         Dim bmp As Bitmap = Image
         For x As Integer = 0 To bmp.Width - 1
             For y As Integer = 0 To bmp.Height - 1
-                If bmp.GetPixel(x, y) = FromColor Then
-                    bmp.SetPixel(x, y, ToColor)
+                If bmp.GetPixel(x, y) = Color.FromArgb(FromColor) Then
+                    MsgBox(bmp.GetPixel(x, y))
+                    If bmp.GetPixel(x, y) <> Color.FromArgb(255, 0, 0, 0) Then MsgBox(bmp.GetPixel(x, y))
+
+                    bmp.SetPixel(x, y, Color.FromArgb(ToColor))
                 End If
             Next
         Next
         Return bmp
     End Function
+    ''' <summary>
+    ''' Depura um ComandoSQL, substituindo os parâmetros na query.
+    ''' </summary>
+    ''' <param name="Command">O SqlCommand contendo a query e os paramêtros.</param>
     Public Shared Sub DebugQuery(ByVal Command As DbCommand)
         Dim Query As String = Command.CommandText
         For Each Parameter As DbParameter In Command.Parameters
