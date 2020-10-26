@@ -16,7 +16,17 @@ Public Class Utility
         End If
         Return True
     End Function
-
+    Public Shared Function RecolorImage(ByVal Image As Image, ByVal FromColor As Color, ByVal ToColor As Color) As Bitmap
+        Dim bmp As Bitmap = Image
+        For x As Integer = 0 To bmp.Width - 1
+            For y As Integer = 0 To bmp.Height - 1
+                If bmp.GetPixel(x, y) = FromColor Then
+                    bmp.SetPixel(x, y, ToColor)
+                End If
+            Next
+        Next
+        Return bmp
+    End Function
     Public Shared Sub DebugQuery(ByVal Command As DbCommand)
         Dim Query As String = Command.CommandText
         For Each Parameter As DbParameter In Command.Parameters
