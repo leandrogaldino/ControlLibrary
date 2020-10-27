@@ -34,15 +34,23 @@ Public Class Utility
         For x As Integer = 0 To bmp.Width - 1
             For y As Integer = 0 To bmp.Height - 1
                 If bmp.GetPixel(x, y) = Color.FromArgb(FromColor) Then
-                    MsgBox(bmp.GetPixel(x, y))
-                    If bmp.GetPixel(x, y) <> Color.FromArgb(255, 0, 0, 0) Then MsgBox(bmp.GetPixel(x, y))
-
                     bmp.SetPixel(x, y, Color.FromArgb(ToColor))
                 End If
             Next
         Next
         Return bmp
     End Function
+    Public Shared Function GetImageColors(ByVal Img As Image) As List(Of Integer)
+        Dim Lst As New List(Of Integer)
+        Dim bmp As Bitmap = Img
+        For x As Integer = 0 To bmp.Width - 1
+            For y As Integer = 0 To bmp.Height - 1
+                Lst.Add(bmp.GetPixel(x, y).ToArgb())
+            Next
+        Next
+        Return Lst.Distinct().ToList
+    End Function
+
     ''' <summary>
     ''' Depura um ComandoSQL, substituindo os parâmetros na query.
     ''' </summary>
