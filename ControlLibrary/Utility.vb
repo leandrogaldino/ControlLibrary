@@ -40,12 +40,12 @@ Public Class Utility
         Next
         Return bmp
     End Function
-    Public Shared Function GetImageColors(ByVal Img As Image) As List(Of Integer)
-        Dim Lst As New List(Of Integer)
+    Public Shared Function GetImageColors(ByVal Img As Image) As List(Of Color)
+        Dim Lst As New List(Of Color)
         Dim bmp As Bitmap = Img
         For x As Integer = 0 To bmp.Width - 1
             For y As Integer = 0 To bmp.Height - 1
-                Lst.Add(bmp.GetPixel(x, y).ToArgb())
+                Lst.Add(bmp.GetPixel(x, y))
             Next
         Next
         Return Lst.Distinct().ToList
