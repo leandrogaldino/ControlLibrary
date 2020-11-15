@@ -958,6 +958,7 @@ Public Class QueriedBox
             End If
         End If
     End Sub
+    <DebuggerStepThrough>
     Private Sub CloseDropDown()
         If DropDownResultsForm IsNot Nothing Then
             DropDownResultsForm.Close()
