@@ -77,6 +77,19 @@ Public Class DataGridViewNavigator
             End If
         End Set
     End Property
+    Public Sub EnsureVisibleRow(ByVal RowToShow As Integer)
+        If RowToShow >= 0 AndAlso RowToShow < _DataGridView.RowCount Then
+            _DataGridView.Rows(RowToShow).Selected = True
+            Dim CountVisible = _DataGridView.DisplayedRowCount(False)
+            Dim FirstVisible = _DataGridView.FirstDisplayedScrollingRowIndex
+            If RowToShow < FirstVisible Then
+                _DataGridView.FirstDisplayedScrollingRowIndex = RowToShow
+            ElseIf RowToShow >= FirstVisible + CountVisible Then
+                _DataGridView.FirstDisplayedScrollingRowIndex = RowToShow - CountVisible + If(CountVisible > 0, 1, 0)
+            End If
+        End If
+    End Sub
+
     Public Sub RefreshButtons()
         If _DataGridView.Rows.Count > 0 Then
             _FirstButton.Enabled = If(_DataGridView.SelectedRows(0).Index > 0, True, False)
@@ -97,39 +110,12 @@ Public Class DataGridViewNavigator
             Return False
         End If
     End Function
-    Public Sub DisplaySelectedRow()
-        If _DataGridView.SelectedRows.Count = 1 Then
-            If _DataGridView.Rows(0).Selected And _DataGridView.Rows.Count > 1 Then
-                If _DataGridView.SelectedRows(0).Displayed = False Then
-                    _DataGridView.FirstDisplayedScrollingRowIndex = _DataGridView.SelectedRows(0).Index
-                End If
-            ElseIf _DataGridView.Rows(0).Selected And _DataGridView.Rows.Count = 1 Then
-                If _DataGridView.SelectedRows(0).Displayed = False Then
-                    _DataGridView.FirstDisplayedScrollingRowIndex = _DataGridView.SelectedRows(0).Index
-                End If
-            ElseIf _DataGridView.Rows(_DataGridView.Rows.Count - 1).Selected Then
-                If _DataGridView.SelectedRows(0).Displayed = False Then
-                    _DataGridView.FirstDisplayedScrollingRowIndex = _DataGridView.RowCount - 1
-                End If
-            Else
-                If _DataGridView.SelectedRows(0).Displayed = False Then
-                    _DataGridView.FirstDisplayedScrollingRowIndex += 1
-                End If
-            End If
-        End If
-        If _DataGridView.SelectedRows(0).Displayed = False Then
-            _DataGridView.FirstDisplayedScrollingRowIndex += _DataGridView.SelectedRows(0).Index - _DataGridView.FirstDisplayedScrollingRowIndex
-        End If
-        If IsPartialRow() Then
-            _DataGridView.FirstDisplayedScrollingRowIndex += 1
-        End If
-    End Sub
     Public Sub MoveToFirst()
         If _DataGridView.SelectedRows.Count = 1 Then
             If _DataGridView.SelectedRows(0).Index > 0 Then
                 _DataGridView.Rows(0).Selected = True
                 RefreshButtons()
-                DisplaySelectedRow()
+                If _DataGridView.SelectedRows.Count > 0 Then EnsureVisibleRow(_DataGridView.SelectedRows(0).Index)
             End If
         End If
     End Sub
@@ -138,7 +124,7 @@ Public Class DataGridViewNavigator
             If _DataGridView.SelectedRows(0).Index > 0 Then
                 _DataGridView.Rows(_DataGridView.SelectedRows(0).Index - 1).Selected = True
                 RefreshButtons()
-                DisplaySelectedRow()
+                If _DataGridView.SelectedRows.Count > 0 Then EnsureVisibleRow(_DataGridView.SelectedRows(0).Index)
             End If
         End If
     End Sub
@@ -147,7 +133,7 @@ Public Class DataGridViewNavigator
             If _DataGridView.SelectedRows(0).Index < _DataGridView.Rows.Count - 1 Then
                 _DataGridView.Rows(_DataGridView.SelectedRows(0).Index + 1).Selected = True
                 RefreshButtons()
-                DisplaySelectedRow()
+                If _DataGridView.SelectedRows.Count > 0 Then EnsureVisibleRow(_DataGridView.SelectedRows(0).Index)
             End If
         End If
     End Sub
@@ -156,7 +142,7 @@ Public Class DataGridViewNavigator
             If _DataGridView.SelectedRows(0).Index < _DataGridView.Rows.Count - 1 Then
                 _DataGridView.Rows(_DataGridView.Rows.Count - 1).Selected = True
                 RefreshButtons()
-                DisplaySelectedRow()
+                If _DataGridView.SelectedRows.Count > 0 Then EnsureVisibleRow(_DataGridView.SelectedRows(0).Index)
             End If
         End If
     End Sub
