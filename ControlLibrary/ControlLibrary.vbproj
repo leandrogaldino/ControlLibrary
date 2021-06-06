@@ -73,6 +73,7 @@
     <Compile Include="DataGridViewNavigator.vb">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="SequencedList.vb" />
     <Compile Include="Utility.vb" />
     <Compile Include="CodeCompiler.vb" />
     <Compile Include="ColorPicker.vb">
