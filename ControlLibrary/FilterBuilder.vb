@@ -260,85 +260,88 @@ Public Class FilterBuilder
 
     Public Sub ShowDialog()
         InitializeComponent()
+        FrmFilter.Font = New Font("Century Gothic", 9.75)
         FrmFilter.ShowDialog()
     End Sub
 
     Private Sub InitializeComponent()
 
         TcTables = New TabControl
-        TcTables.Size = New Size(205, 245)
-        TcTables.Location = New Point(11, 11)
+        TcTables.Size = New Size(270, 320)
+        TcTables.Location = New Point(12, 12)
 
-        DgvWheres = New DataGridView
-        DgvWheres.Dock = DockStyle.Fill
-        DgvWheres.BorderStyle = BorderStyle.None
-        DgvWheres.SelectionMode = DataGridViewSelectionMode.FullRowSelect
-        DgvWheres.Columns.Add("Column", "Coluna")
-        DgvWheres.ColumnHeadersVisible = False
-        DgvWheres.RowHeadersVisible = False
-        DgvWheres.ReadOnly = True
-        DgvWheres.AllowUserToAddRows = False
-        DgvWheres.AllowUserToDeleteRows = False
-        DgvWheres.AllowUserToResizeRows = False
-        DgvWheres.AllowUserToResizeColumns = False
-        DgvWheres.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-        DgvWheres.BackgroundColor = Color.White
-        DgvWheres.CellBorderStyle = DataGridViewCellBorderStyle.None
-
+        DgvColumns = New DataGridView
+        DgvColumns.Dock = DockStyle.Fill
+        DgvColumns.BorderStyle = BorderStyle.None
+        DgvColumns.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        DgvColumns.Columns.Add("Column", "Coluna")
+        DgvColumns.ColumnHeadersVisible = False
+        DgvColumns.RowHeadersVisible = False
+        DgvColumns.ReadOnly = True
+        DgvColumns.AllowUserToAddRows = False
+        DgvColumns.AllowUserToDeleteRows = False
+        DgvColumns.AllowUserToResizeRows = False
+        DgvColumns.AllowUserToResizeColumns = False
+        DgvColumns.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        DgvColumns.BackgroundColor = Color.White
+        DgvColumns.CellBorderStyle = DataGridViewCellBorderStyle.None
+        AddHandler DgvColumns.SelectionChanged, AddressOf DgvColumns_SelectionChanged
         For Each Column In MainTable.Columns
-            DgvWheres.Rows.Add(Column)
-            DgvWheres.Rows(DgvWheres.RowCount - 1).Cells(0).ToolTipText = Column.Name
-        Next column
+            DgvColumns.Rows.Add(Column)
+            DgvColumns.Rows(DgvColumns.RowCount - 1).Cells(0).ToolTipText = Column.Name
+        Next Column
 
         TpTable = New TabPage
         TpTable.Text = MainTable.DisplayName
         TpTable.BackColor = Color.White
-        TpTable.Controls.Add(DgvWheres)
+        TpTable.Controls.Add(DgvColumns)
         TcTables.TabPages.Add(TpTable)
 
-        For Each Table In RelatedTables
-            DgvWheres = New DataGridView
-            DgvWheres.Dock = DockStyle.Fill
-            DgvWheres.BorderStyle = BorderStyle.None
-            DgvWheres.SelectionMode = DataGridViewSelectionMode.FullRowSelect
-            DgvWheres.Columns.Add("Column", "Coluna")
-            DgvWheres.ColumnHeadersVisible = False
-            DgvWheres.RowHeadersVisible = False
-            DgvWheres.ReadOnly = True
-            DgvWheres.AllowUserToAddRows = False
-            DgvWheres.AllowUserToDeleteRows = False
-            DgvWheres.AllowUserToResizeRows = False
-            DgvWheres.AllowUserToResizeColumns = False
-            DgvWheres.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-            DgvWheres.BackgroundColor = Color.White
-            DgvWheres.CellBorderStyle = DataGridViewCellBorderStyle.None
 
+
+        For Each Table In RelatedTables
+            DgvColumns = New DataGridView
+            DgvColumns.Dock = DockStyle.Fill
+            DgvColumns.BorderStyle = BorderStyle.None
+            DgvColumns.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+            DgvColumns.Columns.Add("Column", "Coluna")
+            DgvColumns.ColumnHeadersVisible = False
+            DgvColumns.RowHeadersVisible = False
+            DgvColumns.ReadOnly = True
+            DgvColumns.AllowUserToAddRows = False
+            DgvColumns.AllowUserToDeleteRows = False
+            DgvColumns.AllowUserToResizeRows = False
+            DgvColumns.AllowUserToResizeColumns = False
+            DgvColumns.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            DgvColumns.BackgroundColor = Color.White
+            DgvColumns.CellBorderStyle = DataGridViewCellBorderStyle.None
+            AddHandler DgvColumns.SelectionChanged, AddressOf DgvColumns_SelectionChanged
             For Each Column In Table.Columns
-                DgvWheres.Rows.Add(Column)
-                DgvWheres.Rows(DgvWheres.RowCount - 1).Cells(0).ToolTipText = Column.Name
+                DgvColumns.Rows.Add(Column)
+                DgvColumns.Rows(DgvColumns.RowCount - 1).Cells(0).ToolTipText = Column.Name
             Next Column
 
             TpTable = New TabPage
             TpTable.Text = Table.DisplayName
             TpTable.BackColor = Color.White
-            TpTable.Controls.Add(DgvWheres)
+            TpTable.Controls.Add(DgvColumns)
             TcTables.TabPages.Add(TpTable)
         Next Table
 
         LblOperator = New Label
+        LblOperator.AutoSize = True
         LblOperator.Text = "Operador"
-        LblOperator.Size = New Size(51, 13)
-        LblOperator.Location = New Point(220, 33)
+        LblOperator.Location = New Point(285, 41)
 
         CbxOperador = New ComboBox
         CbxOperador.DropDownStyle = ComboBoxStyle.DropDownList
-        CbxOperador.Size = New Size(98, 21)
-        CbxOperador.Location = New Point(224, 47)
-
+        CbxOperador.Size = New Size(144, 25)
+        CbxOperador.Location = New Point(288, 61)
 
         FrmFilter = New Form
+        FrmFilter.Font = New Font("Century Gothic", 9.75)
         FrmFilter.Text = "Criador de Filtros"
-        FrmFilter.Size = New Drawing.Size(370, 450)
+        FrmFilter.Size = New Drawing.Size(460, 600)
         FrmFilter.BackColor = Color.White
         FrmFilter.ShowIcon = False
         FrmFilter.ShowInTaskbar = False
@@ -346,7 +349,55 @@ Public Class FilterBuilder
         FrmFilter.MaximizeBox = False
         FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
         FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador})
+
+
     End Sub
+    Private Sub CbxOperador_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CbxOperador.SelectedIndexChanged
+        Dim DataType As String = String.Empty
+        Dim Cell As DataGridViewCell
+        If CType(sender, DataGridView).SelectedRows.Count > 0 Then
+            Cell = CType(sender, DataGridView).SelectedRows(0).Cells(0)
+            DataType = CType(Cell.Value, Model.Column).DataType
+        End If
+
+        If CbxOperador.Text = "Entre" Then
+            If DataType = "Numeric" Then
+            ElseIf DataType = "Date" Then
+            End If
+        Else
+            If DataType = "Text then" Then
+            ElseIf DataType = "Numeric" Then
+            ElseIf DataType = "Date" Then
+            End If
+        End If
+    End Sub
+
+    Private Sub DgvColumns_SelectionChanged(sender As Object, e As EventArgs)
+        Dim DataType As String = String.Empty
+        Dim Cell As DataGridViewCell
+        If CType(sender, DataGridView).SelectedRows.Count > 0 Then
+            Cell = CType(sender, DataGridView).SelectedRows(0).Cells(0)
+            DataType = CType(Cell.Value, Model.Column).DataType
+            If DataType = "Text" Then
+                CbxOperador.Items.Clear()
+                CbxOperador.Items.Add("Igual")
+                CbxOperador.Items.Add("Diferente")
+                CbxOperador.Items.Add("Contém")
+            ElseIf DataType = "Numeric" Or DataType = "Date" Then
+                CbxOperador.Items.Clear()
+                CbxOperador.Items.Add("Igual")
+                CbxOperador.Items.Add("Diferente")
+                CbxOperador.Items.Add("Contém")
+                CbxOperador.Items.Add("Entre")
+                CbxOperador.Items.Add("Menor")
+                CbxOperador.Items.Add("Menor ou Igual")
+                CbxOperador.Items.Add("Maior")
+                CbxOperador.Items.Add("Maior ou Igual")
+            End If
+            CbxOperador.SelectedIndex = 0
+        End If
+    End Sub
+
     Friend WithEvents FrmFilter As Form
     Friend WithEvents TcTables As TabControl
     Friend WithEvents TpTable As TabPage
