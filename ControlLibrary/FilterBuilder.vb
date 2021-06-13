@@ -5,20 +5,6 @@ Imports System.Text
 Imports System.Windows.Forms
 
 Public Class FilterBuilder
-    Public Enum ComparsionOperators
-        Equals
-        Different
-        Contains
-        Between
-        Less
-        LessOrEqual
-        Bigger
-        BiggerOrEqual
-    End Enum
-    Public Enum LogicalOperators
-        [And]
-        [Or]
-    End Enum
     Private BooleanTypes As New List(Of String) From {
         "Boolean"
     }
@@ -56,7 +42,7 @@ Public Class FilterBuilder
         Dim Columns() As String
         For Each p In Obj.GetType.GetProperties
             If DataTypes.Contains(p.PropertyType.Name) Then
-                MainTable.Columns.Add(New Model.Column With {.Name = MainTable.Name & "." & p.Name, .DisplayName = GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = True})
+                MainTable.Columns.Add(New Model.Column With {.Name = MainTable.Name & "." & p.Name, .DisplayName = MainTable.DisplayName & "." & GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = True})
             Else
                 Columns = {}
                 If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
@@ -84,13 +70,13 @@ Public Class FilterBuilder
         Q.AppendLine("WHERE")
 
         For i = 0 To Wheres.Count - 1
-            Q.Append(vbTab & Wheres(i).Column.Name & " " & GetComparsionOperator(Wheres(i).ComparsionOperator) & " ")
+            Q.Append(vbTab & Wheres(i).Column.Name & " " & Wheres(i).ComparsionOperator.Value & " ")
             If Wheres(i).Value = Nothing Then
                 Q.Append("@Value")
             Else
                 Q.Append(Wheres(i).Value)
             End If
-            If Wheres(i).ComparsionOperator = ComparsionOperators.Between Then
+            If Wheres(i).ComparsionOperator.Value = "BETWEEN" Then
                 Q.Append(" AND ")
                 If Wheres(i).Value2 = Nothing Then
                     Q.Append("@Value2")
@@ -100,7 +86,7 @@ Public Class FilterBuilder
             End If
 
             If i < Wheres.Count - 1 Then
-                Q.AppendLine(" " & GetLogicalOperator(Wheres(i).LogicalOperator))
+                Q.AppendLine(" " & Wheres(i).LogicalOperator.Value)
             Else
                 Q.AppendLine(";")
             End If
@@ -125,7 +111,7 @@ Public Class FilterBuilder
             For Each p In obj.propertytype.GetProperties
                 If DataTypes.Contains(p.PropertyType.Name) Then
                     IsVisible = If(DisplayColumns.Count = 0, True, DisplayColumns.Contains(p.name))
-                    Table.Columns.Add(New Model.Column With {.Name = Table.Name & "." & p.Name, .DisplayName = GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = IsVisible})
+                    Table.Columns.Add(New Model.Column With {.Name = Table.Name & "." & p.Name, .DisplayName = MainTable.DisplayName & "." & GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = IsVisible})
                 Else
                     If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
                         Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
@@ -145,38 +131,6 @@ Public Class FilterBuilder
                 Dir = "DSC"
         End Select
         Return Dir
-    End Function
-    Private Function GetLogicalOperator(ByVal [Operator] As LogicalOperators) As String
-        Dim Op As String = String.Empty
-        Select Case [Operator]
-            Case = LogicalOperators.And
-                Op = "AND"
-            Case = LogicalOperators.Or
-                Op = "OR"
-        End Select
-        Return Op
-    End Function
-    Private Function GetComparsionOperator(ByVal [Operator] As ComparsionOperators) As String
-        Dim Op As String = String.Empty
-        Select Case [Operator]
-            Case = ComparsionOperators.Equals
-                Op = "="
-            Case = ComparsionOperators.Different
-                Op = "<>"
-            Case = ComparsionOperators.Contains
-                Op = "LIKE"
-            Case = ComparsionOperators.Between
-                Op = "BETWEEN"
-            Case = ComparsionOperators.Less
-                Op = "<"
-            Case = ComparsionOperators.LessOrEqual
-                Op = "<="
-            Case = ComparsionOperators.Bigger
-                Op = ">"
-            Case = ComparsionOperators.BiggerOrEqual
-                Op = ">="
-        End Select
-        Return Op
     End Function
     Private Function GetColumnType(ByVal SistemType As String) As String
         If NumericTypes.Contains(SistemType) Then
@@ -221,12 +175,44 @@ Public Class FilterBuilder
         End If
     End Function
     Public Class Model
+        Public Class [Operator]
+            Public Property Value As String
+            Public Property Display As String
+        End Class
         Public Class WhereClause
             Public Property Column As Column
-            Public Property ComparsionOperator As ComparsionOperators
+            Public Property ComparsionOperator As New [Operator]
             Public Property Value As Object
             Public Property Value2 As Object
-            Public Property LogicalOperator As LogicalOperators
+            Public Property LogicalOperator As New [Operator]
+            Public Overrides Function ToString() As String
+                Dim p1 As String = " é "
+                Dim p2 As String = String.Empty
+                Dim s As String
+                Select Case ComparsionOperator.Value
+                    Case Is = "="
+                        p2 = " a "
+                    Case Is = "<>"
+                        p2 = " de "
+                    Case Is = "LIKE"
+                        p1 = " "
+                        p2 = " "
+                    Case Is = "<"
+                        p2 = " que "
+                    Case Is = ">"
+                        p2 = " que "
+                    Case Is = "<="
+                        p2 = " a "
+                    Case Is = ">="
+                        p2 = " a "
+                End Select
+                If ComparsionOperator.Value <> "BETWEEN" Then
+                    s = Column.DisplayName & p1 & ComparsionOperator.Display & p2 & Value & vbTab & LogicalOperator.Display
+                Else
+                    s = Column.DisplayName & " Está " & ComparsionOperator.Display & " " & Value & " e " & Value2 & vbTab & LogicalOperator.Display
+                End If
+                Return s
+            End Function
         End Class
         Public Class Table
             Public Property Name As String
@@ -242,7 +228,7 @@ Public Class FilterBuilder
             Public Property DataType As String
             Public Property Visible As Boolean
             Public Overrides Function ToString() As String
-                Return DisplayName
+                Return DisplayName.Split(".").ElementAt(1)
             End Function
         End Class
         Public Class DisplayColumn
@@ -258,11 +244,115 @@ Public Class FilterBuilder
         End Class
     End Class
 
-    Public Sub ShowDialog()
+    Public Sub Show()
         InitializeComponent()
         FrmFilter.Font = New Font("Century Gothic", 9.75)
-        FrmFilter.ShowDialog()
+        FrmFilter.Show()
     End Sub
+
+
+
+    Private Sub CbxOperador_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CbxOperador.SelectedIndexChanged
+        If CbxOperador.Text = "Entre" Then
+            LblValue2.Visible = True
+            TxtValue2.Visible = True
+            RbAnd.Location = _AndLocation2
+            RbOr.Location = _OrLocation2
+            BtnAdd.Location = _AddLocation2
+            Debug.Print(RbAnd.Top & " " & RbOr.Top)
+            If _DataType = "Numeric" Then
+            ElseIf _DataType = "Date" Then
+            End If
+        Else
+            LblValue2.Visible = False
+            TxtValue2.Visible = False
+            RbAnd.Location = _AndLocation
+            RbOr.Location = _OrLocation
+            BtnAdd.Location = _AddLocation
+        End If
+
+    End Sub
+
+    Private Sub TcTables_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TcTables.SelectedIndexChanged
+        Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
+        Dim Cell As DataGridViewCell
+        Dim OperatorList As List(Of Model.Operator)
+        If Dgv.SelectedRows.Count > 0 Then
+            Cell = Dgv.SelectedRows(0).Cells(0)
+            _DataType = CType(Cell.Value, Model.Column).DataType
+            OperatorList = New List(Of Model.Operator)
+            OperatorList.Add(New Model.Operator With {.Display = "Igual", .Value = "="})
+            OperatorList.Add(New Model.Operator With {.Display = "Diferente", .Value = "<>"})
+            OperatorList.Add(New Model.Operator With {.Display = "Contém", .Value = "LIKE"})
+
+            If _DataType = "Numeric" Or _DataType = "Date" Then
+
+                OperatorList.Add(New Model.Operator With {.Display = "Entre", .Value = "BETWEEN"})
+                OperatorList.Add(New Model.Operator With {.Display = "Menor", .Value = "<"})
+                OperatorList.Add(New Model.Operator With {.Display = "Menor ou Igual", .Value = "<="})
+                OperatorList.Add(New Model.Operator With {.Display = "Maior", .Value = ">"})
+                OperatorList.Add(New Model.Operator With {.Display = "Maior ou Igual", .Value = ">="})
+            End If
+            CbxOperador.SelectedIndex = 0
+            CbxOperador.ValueMember = "Value"
+            CbxOperador.DisplayMember = "Display"
+            CbxOperador.DataSource = OperatorList
+        End If
+    End Sub
+
+    Public Sub ExecuteQuery()
+        Dim Q = GetSelectCommand()
+
+        preciso agora pegar o que esta dentro dos colchetes e fazer uma caixa de texto pra cada, tambem preciso ver se os valores precisam ser passados por parametro.
+    End Sub
+    Private Sub BtnAdd_Click(sender As Object, e As EventArgs) Handles BtnAdd.Click
+        Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
+        Dim Where As New Model.WhereClause
+        Where.Column = Dgv.SelectedRows(0).Cells(0).Value
+        Where.ComparsionOperator.Value = CbxOperador.SelectedValue
+        Where.ComparsionOperator.Display = CbxOperador.Text
+        Where.Value = TxtValue.Text
+        If Where.ComparsionOperator.Value = "BETWEEN" Then
+            Where.Value2 = TxtValue2.Text
+        End If
+        Where.LogicalOperator.Value = If(RbAnd.Checked, "AND", "OR")
+        Where.LogicalOperator.Display = If(RbAnd.Checked, "e", "ou")
+        Wheres.Add(Where)
+        LbxWheres.Items.Add(Where)
+    End Sub
+
+    Private _DataType As String
+
+
+    Private Sub DgvColumns_SelectionChanged(sender As Object, e As EventArgs)
+        Dim Cell As DataGridViewCell
+        Dim OperatorList As List(Of Model.Operator)
+        If CType(sender, DataGridView).SelectedRows.Count > 0 Then
+            Cell = CType(sender, DataGridView).SelectedRows(0).Cells(0)
+            _DataType = CType(Cell.Value, Model.Column).DataType
+            OperatorList = New List(Of Model.Operator)
+            OperatorList.Add(New Model.Operator With {.Display = "Igual", .Value = "="})
+            OperatorList.Add(New Model.Operator With {.Display = "Diferente", .Value = "<>"})
+            OperatorList.Add(New Model.Operator With {.Display = "Contém", .Value = "LIKE"})
+
+            If _DataType = "Numeric" Or _DataType = "Date" Then
+
+                OperatorList.Add(New Model.Operator With {.Display = "Entre", .Value = "BETWEEN"})
+                OperatorList.Add(New Model.Operator With {.Display = "Menor", .Value = "<"})
+                OperatorList.Add(New Model.Operator With {.Display = "Menor ou Igual", .Value = "<="})
+                OperatorList.Add(New Model.Operator With {.Display = "Maior", .Value = ">"})
+                OperatorList.Add(New Model.Operator With {.Display = "Maior ou Igual", .Value = ">="})
+            End If
+            CbxOperador.ValueMember = "Value"
+            CbxOperador.DisplayMember = "Display"
+            CbxOperador.DataSource = OperatorList
+            CbxOperador.SelectedIndex = 0
+            TxtValue.Text = Nothing
+            TxtValue2.Text = Nothing
+            TxtValue.Select()
+        End If
+    End Sub
+
 
     Private Sub InitializeComponent()
 
@@ -338,6 +428,83 @@ Public Class FilterBuilder
         CbxOperador.Size = New Size(144, 25)
         CbxOperador.Location = New Point(288, 61)
 
+
+        LblValue = New Label
+        LblValue.AutoSize = True
+        LblValue.Text = "Valor"
+        LblValue.Location = New Point(285, 91)
+
+        TxtValue = New TextBox
+        TxtValue.Size = New Size(144, 23)
+        TxtValue.Location = _ValueLocation
+
+        LblValue2 = New Label
+        LblValue2.AutoSize = True
+        LblValue2.Text = "Valor 2"
+        LblValue2.Location = New Point(285, 138)
+
+        TxtValue2 = New TextBox
+        TxtValue2.Size = New Size(144, 23)
+        TxtValue2.Location = _value2Location
+
+        RbAnd = New RadioButton
+        RbAnd.Checked = True
+        RbAnd.Location = _AndLocation2
+        RbAnd.AutoSize = True
+        RbAnd.Text = "E"
+
+        RbOr = New RadioButton
+        RbOr.Checked = False
+        RbOr.Location = _OrLocation2
+        RbOr.AutoSize = True
+        RbOr.Text = "OU"
+
+        BtnAdd = New Button
+        BtnAdd.Text = "Adicionar"
+        BtnAdd.Size = New Size(144, 35)
+        BtnAdd.Location = _AddLocation2
+        BtnAdd.UseVisualStyleBackColor = True
+
+
+
+        'DgvWheres = New DataGridView
+        'DgvWheres.Dock = DockStyle.Fill
+        'DgvWheres.BorderStyle = BorderStyle.Fixed3D
+        'DgvWheres.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+
+        'DgvWheres.ColumnHeadersVisible = False
+        'DgvWheres.RowHeadersVisible = False
+        'DgvWheres.ReadOnly = True
+        'DgvWheres.AllowUserToAddRows = False
+        'DgvWheres.AllowUserToDeleteRows = False
+        'DgvWheres.AllowUserToResizeRows = False
+        'DgvWheres.AllowUserToResizeColumns = False
+        'DgvWheres.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        'DgvWheres.BackgroundColor = Color.White
+        'DgvWheres.CellBorderStyle = DataGridViewCellBorderStyle.None
+
+        LbxWheres = New ListBox
+        LbxWheres.Dock = DockStyle.Fill
+        LbxWheres.BackColor = Color.White
+
+        BtnDelete = New ToolStripButton
+        BtnDelete.DisplayStyle = ToolStripItemDisplayStyle.Text
+        BtnDelete.Text = "Deletar"
+
+
+        TsBar = New ToolStrip
+        TsBar.GripStyle = ToolStripGripStyle.Hidden
+        TsBar.BackColor = Color.White
+        TsBar.RenderMode = ToolStripRenderMode.System
+        TsBar.Items.Add(BtnDelete)
+
+        PnDgvWheres = New Panel
+        PnDgvWheres.BackColor = Color.White
+        PnDgvWheres.Location = New Point(12, 339)
+        PnDgvWheres.Size = New Size(415, 152)
+        PnDgvWheres.Controls.AddRange({LbxWheres, TsBar})
+
+
         FrmFilter = New Form
         FrmFilter.Font = New Font("Century Gothic", 9.75)
         FrmFilter.Text = "Criador de Filtros"
@@ -348,56 +515,18 @@ Public Class FilterBuilder
         FrmFilter.MinimizeBox = False
         FrmFilter.MaximizeBox = False
         FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
-        FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador})
+        FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador, LblValue, TxtValue, LblValue2, TxtValue2, RbAnd, RbOr, BtnAdd, PnDgvWheres})
 
 
     End Sub
-    Private Sub CbxOperador_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CbxOperador.SelectedIndexChanged
-        Dim DataType As String = String.Empty
-        Dim Cell As DataGridViewCell
-        If CType(sender, DataGridView).SelectedRows.Count > 0 Then
-            Cell = CType(sender, DataGridView).SelectedRows(0).Cells(0)
-            DataType = CType(Cell.Value, Model.Column).DataType
-        End If
-
-        If CbxOperador.Text = "Entre" Then
-            If DataType = "Numeric" Then
-            ElseIf DataType = "Date" Then
-            End If
-        Else
-            If DataType = "Text then" Then
-            ElseIf DataType = "Numeric" Then
-            ElseIf DataType = "Date" Then
-            End If
-        End If
-    End Sub
-
-    Private Sub DgvColumns_SelectionChanged(sender As Object, e As EventArgs)
-        Dim DataType As String = String.Empty
-        Dim Cell As DataGridViewCell
-        If CType(sender, DataGridView).SelectedRows.Count > 0 Then
-            Cell = CType(sender, DataGridView).SelectedRows(0).Cells(0)
-            DataType = CType(Cell.Value, Model.Column).DataType
-            If DataType = "Text" Then
-                CbxOperador.Items.Clear()
-                CbxOperador.Items.Add("Igual")
-                CbxOperador.Items.Add("Diferente")
-                CbxOperador.Items.Add("Contém")
-            ElseIf DataType = "Numeric" Or DataType = "Date" Then
-                CbxOperador.Items.Clear()
-                CbxOperador.Items.Add("Igual")
-                CbxOperador.Items.Add("Diferente")
-                CbxOperador.Items.Add("Contém")
-                CbxOperador.Items.Add("Entre")
-                CbxOperador.Items.Add("Menor")
-                CbxOperador.Items.Add("Menor ou Igual")
-                CbxOperador.Items.Add("Maior")
-                CbxOperador.Items.Add("Maior ou Igual")
-            End If
-            CbxOperador.SelectedIndex = 0
-        End If
-    End Sub
-
+    Private _ValueLocation As New Point(288, 111)
+    Private _value2Location As New Point(288, 158)
+    Private _AndLocation As New Point(288, 140)
+    Private _AndLocation2 As New Point(288, 187)
+    Private _OrLocation As New Point(327, 140)
+    Private _OrLocation2 As New Point(327, 187)
+    Private _AddLocation As New Point(288, 167)
+    Private _AddLocation2 As New Point(288, 214)
     Friend WithEvents FrmFilter As Form
     Friend WithEvents TcTables As TabControl
     Friend WithEvents TpTable As TabPage
@@ -407,7 +536,14 @@ Public Class FilterBuilder
     Friend WithEvents RbAnd As RadioButton
     Friend WithEvents RbOr As RadioButton
     Friend WithEvents BtnAdd As Button
-    Friend WithEvents DgvWheres As DataGridView
     Friend WithEvents LblOperator As Label
     Friend WithEvents CbxOperador As ComboBox
+    Friend WithEvents LblValue As Label
+    Friend WithEvents LblValue2 As Label
+
+
+    Friend WithEvents LbxWheres As ListBox
+    Friend WithEvents PnDgvWheres As Panel
+    Friend WithEvents TsBar As ToolStrip
+    Friend WithEvents BtnDelete As ToolStripButton
 End Class
