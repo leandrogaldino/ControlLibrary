@@ -8,6 +8,6 @@ Public Class Person
     Public Property Name As String
     <DisplayName("Aniversário")>
     Public Property Birth As Date
-    <DisplayName("Compressoru")>
+    <DisplayName("Compressor")>
     Public Property Compressor As Compressor
 End Class

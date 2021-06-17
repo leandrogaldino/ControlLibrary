@@ -3,6 +3,7 @@
 Imports System.Runtime.InteropServices
 
 Public Class QueriedBoxTests
+<<<<<<< Updated upstream
     Friend WithEvents EvaluationCalendar As New MonthCalendar
     Private Sub TxtEvaluationDate_KeyDown(sender As Object, e As KeyEventArgs) Handles TxtEvaluationDate.KeyDown
         If e.KeyCode = Keys.Enter Then
@@ -79,6 +80,67 @@ Public Class QueriedBoxTests
         BeginInvoke(CType(Sub()
                               SetMaskedTextBoxSelectAll(CType(TxtEvaluationDate, MaskedTextBox))
                           End Sub, Action))
+=======
+    Private f As FilterBuilder
+
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Dim p As New Person
+
+
+        f = New FilterBuilder(p)
+
+
+        Dim w As FilterBuilder.Model.WhereClause
+
+
+
+        w = New FilterBuilder.Model.WhereClause
+        w.Column = f.MainTable.Columns(0)
+        w.ComparsionOperator.Display = "Igual"
+        w.ComparsionOperator.Value = "="
+        w.LogicalOperator.Display = "e"
+        w.LogicalOperator.Value = "AND"
+        w.Value = "[Digite o Nome]"
+        f.Wheres.Add(w)
+
+        w = New FilterBuilder.Model.WhereClause
+        w.Column = f.MainTable.Columns(1)
+        w.ComparsionOperator.Display = "Igual"
+        w.ComparsionOperator.Value = "="
+        w.LogicalOperator.Display = "e"
+        w.LogicalOperator.Value = "AND"
+        w.Value = "[Digite a idade]"
+        f.Wheres.Add(w)
+
+        Dim c As Common.DbCommand = f.GetCommand(New SQLite.SQLiteConnection(""))
+
+        For Each pr As Common.DbParameter In c.Parameters
+            MsgBox(pr.ParameterName & " " & pr.Value)
+            MsgBox(c.CommandText)
+        Next
+
+
+
+
+    End Sub
+
+    Private Sub QueriedBoxTests_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        For Each c As TextBox In Controls.OfType(Of TextBox)
+            If c.Focused Then
+                c.Update()
+                c.Refresh()
+            End If
+        Next
+    End Sub
+
+    Private Sub TextBox1_TextChanged(sender As Object, e As EventArgs) Handles TextBox1.TextChanged
+
+    End Sub
+
+    Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+>>>>>>> Stashed changes
     End Sub
 
 
