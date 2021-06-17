@@ -100,6 +100,9 @@
   <ItemGroup>
     <Compile Include="Address.vb" />
     <Compile Include="Compressor.vb" />
+    <Compile Include="DateBox.vb">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FrmCodeCompilerTest.vb">
       <SubType>Form</SubType>
     </Compile>

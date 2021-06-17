@@ -303,7 +303,7 @@ Public Class FilterBuilder
     Public Sub ExecuteQuery()
         Dim Q = GetSelectCommand()
 
-        preciso agora pegar o que esta dentro dos colchetes e fazer uma caixa de texto pra cada, tambem preciso ver se os valores precisam ser passados por parametro.
+        'preciso agora pegar o que esta dentro dos colchetes e fazer uma caixa de texto pra cada, tambem preciso ver se os valores precisam ser passados por parametro.
     End Sub
     Private Sub BtnAdd_Click(sender As Object, e As EventArgs) Handles BtnAdd.Click
         Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
