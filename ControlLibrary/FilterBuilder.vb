@@ -33,6 +33,7 @@ Public Class FilterBuilder
         "Double",
         "Decimal"
     }
+    Public Property FilterName As String
     Public Property MainTable As New Model.Table
     Public Property RelatedTables As New List(Of Model.Table)
     Public Property Wheres As New List(Of Model.WhereClause)
@@ -54,10 +55,26 @@ Public Class FilterBuilder
         Next p
     End Sub
 
+    Private Function HasConstructor() As Boolean
+        For Each Where In Wheres
+            If IsConstructor(Where.Value.Value) Or IsConstructor(Where.Value2.Value) Then
+                Return True
+            End If
+        Next Where
+        Return False
+    End Function
+    Private Function IsConstructor(ByVal s As String) As Boolean
+        If Strings.Left(s, 1) = "[" And Strings.Right(s, 1) = "]" Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+    Private Function GetConstrucorCaption(ByVal s As String) As String
+        Return Strings.Mid(s, 2, s.Length - 2)
+    End Function
 
-
-
-    Public Function GetCommand(ByVal Connection As DbConnection) As DbCommand
+    Public Function GetCommandOBSOLETE(ByVal Connection As DbConnection) As DbCommand
         Dim Cmd As DbCommand = Connection.CreateCommand
         Dim Par As DbParameter
         Dim Count As Long = 1
@@ -66,18 +83,24 @@ Public Class FilterBuilder
         Dim TxtTop As Integer = 28
 
 
-        Cmd.CommandText = GetSelectCommand()
+        'Cmd.CommandText = GetSelectCommand()
 
-        FrmFilter = New Form
-        FrmFilter.Size = New Size(200, 130)
-        FrmFilter.MaximizeBox = False
-        FrmFilter.MinimizeBox = False
-        FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
-        FrmFilter.ShowIcon = False
-        FrmFilter.ShowInTaskbar = False
-        FrmFilter.Font = New Font("Century Gothic", 9.75)
-        FrmFilter.BackColor = Color.White
-        FrmFilter.Text = "Parâmetros do Filtro"
+        If HasConstructor() Then
+            FrmFilter = New Form
+            FrmFilter.Size = New Size(200, 130)
+            FrmFilter.MaximizeBox = False
+            FrmFilter.MinimizeBox = False
+            FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
+            FrmFilter.ShowIcon = False
+            FrmFilter.ShowInTaskbar = False
+            FrmFilter.Font = New Font("Century Gothic", 9.75)
+            FrmFilter.BackColor = Color.White
+            FrmFilter.Text = "Parâmetros do Filtro"
+
+
+        End If
+
+
 
         For Each Where In Wheres
             If Where.ComparsionOperator.Value <> "BETWEEN" Then
@@ -168,52 +191,123 @@ Public Class FilterBuilder
     End Function
 
     Private btntest As Button
-    Public Function GetSelectCommand() As String
-        Dim Q As New StringBuilder
-        Q.AppendLine("SELECT ")
+    Public Function GetDbCommand(ByVal Connection As DbConnection) As DbCommand
+        Dim Command As DbCommand = Connection.CreateCommand
+        Dim parameter As DbParameter
+        Dim Query As New StringBuilder
+        Dim ValueCounter As Integer
+        Dim Salt As Integer = 39
+        Dim LblTop As Integer = 9
+        Dim TxtTop As Integer = 28
+
+        Query.AppendLine("SELECT ")
         For Each Column In MainTable.Columns
-            Q.AppendLine(vbTab & Column.Name & ", ")
+            Query.AppendLine(vbTab & Column.Name & ", ")
         Next Column
         For Each Table In RelatedTables
             For Each Column In Table.Columns
-                If Column.Visible Then Q.AppendLine(vbTab & Column.Name & ", ")
+                If Column.Visible Then Query.AppendLine(vbTab & Column.Name & ", ")
             Next Column
         Next Table
-        Q.Remove(Q.Length - 4, 2)
-        Q.Append("FROM ")
-        Q.AppendLine(MainTable.Name)
-        RelatedTables.ForEach(Sub(x) Q.AppendLine("JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID"))
-        Q.AppendLine("WHERE")
+        Query.Remove(Query.Length - 4, 2)
+        Query.Append("FROM ")
+        Query.AppendLine(MainTable.Name)
+        RelatedTables.ForEach(Sub(x) Query.AppendLine("JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID"))
+        If Wheres.Count > 0 Then
 
-        For i = 0 To Wheres.Count - 1
-            Q.Append(vbTab & Wheres(i).Column.Name & " " & Wheres(i).ComparsionOperator.Value & " ")
-            If Wheres(i).Value = Nothing Then
-                Q.Append("@Value")
-            Else
-                Q.Append(Wheres(i).Value)
+            Query.AppendLine("WHERE")
+
+
+            If HasConstructor() Then
+                FrmFilter = New Form
+                FrmFilter.Size = New Size(200, 130)
+                FrmFilter.MaximizeBox = False
+                FrmFilter.MinimizeBox = False
+                FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
+                FrmFilter.ShowIcon = False
+                FrmFilter.ShowInTaskbar = False
+                FrmFilter.Font = New Font("Century Gothic", 9.75)
+                FrmFilter.BackColor = Color.White
+                FrmFilter.Text = "Parâmetros do Filtro - " & FilterName
             End If
-            If Wheres(i).ComparsionOperator.Value = "BETWEEN" Then
-                Q.Append(" AND ")
-                If Wheres(i).Value2 = Nothing Then
-                    Q.Append("@Value2")
-                Else
-                    Q.Append(Wheres(i).Value2)
+
+            For Each Where In Wheres
+                If Where.ComparsionOperator.Value = "BETWEEN" Then
+                    If IsConstructor(Where.Value.Value) Then
+
+                        Par.ParameterName = "@VALUE" & Count.ToString
+
+                        LblValue = New Label
+                        LblValue.AutoSize = True
+                        LblValue.Text = Strings.Mid(Where.Value.ToString, 2, Where.Value.ToString.Length - 2)
+                        LblValue.Location = New Point(12, LblTop)
+                        FrmFilter.Controls.Add(LblValue)
+                        TxtValue = New TextBox
+                        TxtValue.Width = 157
+                        TxtValue.Location = New Point(15, TxtTop)
+
+                        TxtValue.DataBindings.Add("Text", Where.Value.Value, "Value")
+                        FrmFilter.Controls.Add(TxtValue)
+                        Where.Value = Nothing
+                        LblTop += Salt
+                        TxtTop += Salt
+
+
+                    End If
                 End If
-            End If
-
-            If i < Wheres.Count - 1 Then
-                Q.AppendLine(" " & Wheres(i).LogicalOperator.Value)
-            Else
-                Q.AppendLine(";")
-            End If
-        Next i
+            Next Where
 
 
 
 
+            'For i = 0 To Wheres.Count - 1
+
+            'If Wheres(i).ComparsionOperator.Value = "BETWEEN" Then
 
 
-        Return Q.ToString
+
+            'End If
+
+
+
+
+
+
+
+            'Query.Append(vbTab & Wheres(i).Column.Name & " " & Wheres(i).ComparsionOperator.Value & " ")
+
+
+
+
+
+
+            '    If Wheres(i).Value = Nothing Then
+            '        Query.Append("@Value")
+            '    Else
+            '        Query.Append(Wheres(i).Value)
+            '    End If
+            '    If Wheres(i).ComparsionOperator.Value = "BETWEEN" Then
+            '        Query.Append(" AND ")
+            '        If Wheres(i).Value2 = Nothing Then
+            '            Query.Append("@Value2")
+            '        Else
+            '            Query.Append(Wheres(i).Value2)
+            '        End If
+            '    End If
+
+            '    If i < Wheres.Count - 1 Then
+            '        Query.AppendLine(" " & Wheres(i).LogicalOperator.Value)
+            '    Else
+            '        Query.AppendLine(";")
+            '    End If
+            'Next i
+
+
+        End If
+
+
+
+        Return Command
     End Function
     Private Sub FillRelatedTable(ByVal obj As Object, ByVal DisplayColumns() As String)
         Dim DataTypes = NumericTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
@@ -298,8 +392,8 @@ Public Class FilterBuilder
         Public Class WhereClause
             Public Property Column As Column
             Public Property ComparsionOperator As New [Operator]
-            Public Property Value As String
-            Public Property Value2 As String
+            Public Property Value As DbParameter
+            Public Property Value2 As DbParameter
             Public Property LogicalOperator As New [Operator]
             Public Overrides Function ToString() As String
                 Dim p1 As String = " é "
@@ -323,9 +417,9 @@ Public Class FilterBuilder
                         p2 = " a "
                 End Select
                 If ComparsionOperator.Value <> "BETWEEN" Then
-                    s = Column.DisplayName & p1 & ComparsionOperator.Display & p2 & Value & vbTab & LogicalOperator.Display
+                    s = Column.DisplayName & p1 & ComparsionOperator.Display & p2 & Value.Value & vbTab & LogicalOperator.Display
                 Else
-                    s = Column.DisplayName & " Está " & ComparsionOperator.Display & " " & Value & " e " & Value2 & vbTab & LogicalOperator.Display
+                    s = Column.DisplayName & " Está " & ComparsionOperator.Display & " " & Value.Value & " e " & Value2 & vbTab & LogicalOperator.Display
                 End If
                 Return s
             End Function
@@ -419,19 +513,19 @@ Public Class FilterBuilder
 
 
     Private Sub BtnAdd_Click(sender As Object, e As EventArgs) Handles BtnAdd.Click
-        Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
-        Dim Where As New Model.WhereClause
-        Where.Column = Dgv.SelectedRows(0).Cells(0).Value
-        Where.ComparsionOperator.Value = CbxOperador.SelectedValue
-        Where.ComparsionOperator.Display = CbxOperador.Text
-        Where.Value = TxtValue.Text
-        If Where.ComparsionOperator.Value = "BETWEEN" Then
-            Where.Value2 = TxtValue2.Text
-        End If
-        Where.LogicalOperator.Value = If(RbAnd.Checked, "AND", "OR")
-        Where.LogicalOperator.Display = If(RbAnd.Checked, "e", "ou")
-        Wheres.Add(Where)
-        LbxWheres.Items.Add(Where)
+        'Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
+        'Dim Where As New Model.WhereClause
+        'Where.Column = Dgv.SelectedRows(0).Cells(0).Value
+        'Where.ComparsionOperator.Value = CbxOperador.SelectedValue
+        'Where.ComparsionOperator.Display = CbxOperador.Text
+        'Where.Value = TxtValue.Text
+        'If Where.ComparsionOperator.Value = "BETWEEN" Then
+        '    Where.Value2 = TxtValue2.Text
+        'End If
+        'Where.LogicalOperator.Value = If(RbAnd.Checked, "AND", "OR")
+        'Where.LogicalOperator.Display = If(RbAnd.Checked, "e", "ou")
+        'Wheres.Add(Where)
+        'LbxWheres.Items.Add(Where)
     End Sub
 
     Private _DataType As String

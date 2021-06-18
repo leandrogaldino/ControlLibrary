@@ -16,7 +16,7 @@ Public Class QueriedBoxTests
         Filter.Wheres.Add(Where)
 
 
-        Utility.DebugQuery(Filter.GetCommand(New SQLite.SQLiteConnection("")))
+        Utility.DebugQuery(Filter.GetCommandOBSOLETE(New SQLite.SQLiteConnection("")))
 
     End Sub
 End Class
