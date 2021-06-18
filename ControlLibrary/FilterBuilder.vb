@@ -63,30 +63,30 @@ Public Class FilterBuilder
         Dim Count As Long = 1
         Dim Salt As Integer = 39
         Dim LblTop As Integer = 9
-        Dim TxtTop As Integer = 25
+        Dim TxtTop As Integer = 28
 
 
         Cmd.CommandText = GetSelectCommand()
 
         FrmFilter = New Form
-        FrmFilter.Size = New Size(200, 300)
-        FrmFilter.ControlBox = False
+        FrmFilter.Size = New Size(200, 130)
+        FrmFilter.MaximizeBox = False
+        FrmFilter.MinimizeBox = False
+        FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
+        FrmFilter.ShowIcon = False
+        FrmFilter.ShowInTaskbar = False
+        FrmFilter.Font = New Font("Century Gothic", 9.75)
+        FrmFilter.BackColor = Color.White
+        FrmFilter.Text = "Parâmetros do Filtro"
 
-        For Each w In Wheres
-
-
-
-
-
-            If w.ComparsionOperator.Value <> "BETWEEN" Then
+        For Each Where In Wheres
+            If Where.ComparsionOperator.Value <> "BETWEEN" Then
                 Par = Cmd.CreateParameter
                 Par.ParameterName = "@VALUE" & Count.ToString
-
-
-                If Strings.Left(w.Value.ToString, 1) = "[" And Strings.Right(w.Value.ToString, 1) = "]" Then
+                If Strings.Left(Where.Value.ToString, 1) = "[" And Strings.Right(Where.Value.ToString, 1) = "]" Then
                     LblValue = New Label
                     LblValue.AutoSize = True
-                    LblValue.Text = Strings.Mid(w.Value.ToString, 2, w.Value.ToString.Length - 2)
+                    LblValue.Text = Strings.Mid(Where.Value.ToString, 2, Where.Value.ToString.Length - 2)
                     LblValue.Location = New Point(12, LblTop)
                     FrmFilter.Controls.Add(LblValue)
                     TxtValue = New TextBox
@@ -94,28 +94,22 @@ Public Class FilterBuilder
                     TxtValue.Location = New Point(15, TxtTop)
                     TxtValue.DataBindings.Add("Text", Par, "Value")
                     FrmFilter.Controls.Add(TxtValue)
-                    w.Value = Nothing
+                    Where.Value = Nothing
                     LblTop += Salt
                     TxtTop += Salt
                 Else
-                    Par.Value = w.Value
+                    Par.Value = Where.Value
                 End If
 
                 Cmd.Parameters.Add(Par)
                 Count += 1
             Else
-
-
-
-
                 Par = Cmd.CreateParameter
                 Par.ParameterName = "@VALUE" & Count.ToString
-
-
-                If Strings.Left(w.Value.ToString, 1) = "[" And Strings.Right(w.Value.ToString, 1) = "]" Then
+                If Strings.Left(Where.Value.ToString, 1) = "[" And Strings.Right(Where.Value.ToString, 1) = "]" Then
                     LblValue = New Label
                     LblValue.AutoSize = True
-                    LblValue.Text = Strings.Mid(w.Value.ToString, 2, w.Value.ToString.Length - 2)
+                    LblValue.Text = Strings.Mid(Where.Value.ToString, 2, Where.Value.ToString.Length - 2)
                     LblValue.Location = New Point(12, LblTop)
                     FrmFilter.Controls.Add(LblValue)
                     TxtValue = New TextBox
@@ -123,28 +117,21 @@ Public Class FilterBuilder
                     TxtValue.Location = New Point(15, TxtTop)
                     TxtValue.DataBindings.Add("Text", Par, "Value")
                     FrmFilter.Controls.Add(TxtValue)
-                    w.Value = Nothing
+                    Where.Value = Nothing
 
                     LblTop += Salt
                     TxtTop += Salt
                 Else
-                    Par.Value = w.Value
+                    Par.Value = Where.Value
                 End If
-
                 Cmd.Parameters.Add(Par)
                 Count += 1
-
-
-
-
                 Par = Cmd.CreateParameter
                 Par.ParameterName = "@VALUE" & Count.ToString
-
-
-                If Strings.Left(w.Value2.ToString, 1) = "[" And Strings.Right(w.Value2.ToString, 1) = "]" Then
+                If Strings.Left(Where.Value2.ToString, 1) = "[" And Strings.Right(Where.Value2.ToString, 1) = "]" Then
                     LblValue = New Label
                     LblValue.AutoSize = True
-                    LblValue.Text = Strings.Mid(w.Value2.ToString, 2, w.Value2.ToString.Length - 2)
+                    LblValue.Text = Strings.Mid(Where.Value2.ToString, 2, Where.Value2.ToString.Length - 2)
                     LblValue.Location = New Point(12, LblTop)
                     FrmFilter.Controls.Add(LblValue)
                     TxtValue = New TextBox
@@ -152,28 +139,31 @@ Public Class FilterBuilder
                     TxtValue.Location = New Point(15, TxtTop)
                     TxtValue.DataBindings.Add("Text", Par, "Value")
                     FrmFilter.Controls.Add(TxtValue)
-
-                    w.Value2 = Nothing
-
+                    Where.Value2 = Nothing
                     LblTop += Salt
                     TxtTop += Salt
                 Else
-                    Par.Value = w.Value2
+                    Par.Value = Where.Value2
                 End If
 
                 Cmd.Parameters.Add(Par)
                 Count += 1
-
-
             End If
         Next
-
         btntest = New Button
         btntest.UseVisualStyleBackColor = True
-        btntest.Location = New Point(15, TxtTop)
+        btntest.Size = New Size(60, 28)
+        btntest.Location = New Point(60, TxtTop - 10)
+        btntest.Text = "Filtrar"
+        btntest.Dock = DockStyle.Bottom
         FrmFilter.Controls.Add(btntest)
+        If Count > 1 Then
+            If FrmFilter.ShowDialog() = DialogResult.OK Then
 
-        FrmFilter.ShowDialog()
+            End If
+        Else
+            If Wheres.Count = 0 Then Cmd.CommandText = Strings.Left(Cmd.CommandText, Cmd.CommandText.Length - 9) & ";"
+        End If
         Return Cmd
     End Function
 
@@ -427,11 +417,7 @@ Public Class FilterBuilder
     End Sub
 
 
-<<<<<<< Updated upstream
-        'preciso agora pegar o que esta dentro dos colchetes e fazer uma caixa de texto pra cada, tambem preciso ver se os valores precisam ser passados por parametro.
-    End Sub
-=======
->>>>>>> Stashed changes
+
     Private Sub BtnAdd_Click(sender As Object, e As EventArgs) Handles BtnAdd.Click
         Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
         Dim Where As New Model.WhereClause

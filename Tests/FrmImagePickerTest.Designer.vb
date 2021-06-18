@@ -22,10 +22,14 @@ Partial Class FrmImagePickerTest
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim MenuBarIcons1 As ControlLibrary.ImagePicker.MenuBarIcons = New ControlLibrary.ImagePicker.MenuBarIcons()
+        Dim MenuBarIcons5 As ControlLibrary.ImagePicker.MenuBarIcons = New ControlLibrary.ImagePicker.MenuBarIcons()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FrmImagePickerTest))
-        Dim NavigationBarIcons1 As ControlLibrary.ImagePicker.NavigationBarIcons = New ControlLibrary.ImagePicker.NavigationBarIcons()
+        Dim NavigationBarIcons5 As ControlLibrary.ImagePicker.NavigationBarIcons = New ControlLibrary.ImagePicker.NavigationBarIcons()
         Me.ImagePicker1 = New ControlLibrary.ImagePicker()
+        Me.ControlSlider1 = New ControlLibrary.ControlSlider()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.GroupBox1.SuspendLayout()
         Me.SuspendLayout()
         '
         'ImagePicker1
@@ -42,20 +46,20 @@ Partial Class FrmImagePickerTest
         Me.ImagePicker1.Location = New System.Drawing.Point(12, 12)
         Me.ImagePicker1.MaximumImageNumber = 100
         Me.ImagePicker1.MenuBar.BackColor = System.Drawing.Color.Gainsboro
-        MenuBarIcons1.Include = CType(resources.GetObject("MenuBarIcons1.Include"), System.Drawing.Image)
-        MenuBarIcons1.Remove = CType(resources.GetObject("MenuBarIcons1.Remove"), System.Drawing.Image)
-        MenuBarIcons1.Save = CType(resources.GetObject("MenuBarIcons1.Save"), System.Drawing.Image)
-        Me.ImagePicker1.MenuBar.Icons = MenuBarIcons1
+        MenuBarIcons5.Include = CType(resources.GetObject("MenuBarIcons5.Include"), System.Drawing.Image)
+        MenuBarIcons5.Remove = CType(resources.GetObject("MenuBarIcons5.Remove"), System.Drawing.Image)
+        MenuBarIcons5.Save = CType(resources.GetObject("MenuBarIcons5.Save"), System.Drawing.Image)
+        Me.ImagePicker1.MenuBar.Icons = MenuBarIcons5
         Me.ImagePicker1.MenuBar.MouseDownBackColor = System.Drawing.Color.SteelBlue
         Me.ImagePicker1.MenuBar.MouseOverBackColor = System.Drawing.Color.SkyBlue
         Me.ImagePicker1.MinimumSize = New System.Drawing.Size(120, 120)
         Me.ImagePicker1.Name = "ImagePicker1"
         Me.ImagePicker1.NavigationBar.BackColor = System.Drawing.Color.Gainsboro
-        NavigationBarIcons1.First = CType(resources.GetObject("NavigationBarIcons1.First"), System.Drawing.Image)
-        NavigationBarIcons1.Last = CType(resources.GetObject("NavigationBarIcons1.Last"), System.Drawing.Image)
-        NavigationBarIcons1.Next = CType(resources.GetObject("NavigationBarIcons1.Next"), System.Drawing.Image)
-        NavigationBarIcons1.Previous = CType(resources.GetObject("NavigationBarIcons1.Previous"), System.Drawing.Image)
-        Me.ImagePicker1.NavigationBar.Icons = NavigationBarIcons1
+        NavigationBarIcons5.First = CType(resources.GetObject("NavigationBarIcons5.First"), System.Drawing.Image)
+        NavigationBarIcons5.Last = CType(resources.GetObject("NavigationBarIcons5.Last"), System.Drawing.Image)
+        NavigationBarIcons5.Next = CType(resources.GetObject("NavigationBarIcons5.Next"), System.Drawing.Image)
+        NavigationBarIcons5.Previous = CType(resources.GetObject("NavigationBarIcons5.Previous"), System.Drawing.Image)
+        Me.ImagePicker1.NavigationBar.Icons = NavigationBarIcons5
         Me.ImagePicker1.NavigationBar.MouseDownBackColor = System.Drawing.Color.SteelBlue
         Me.ImagePicker1.NavigationBar.MouseOverBackColor = System.Drawing.Color.SkyBlue
         Me.ImagePicker1.NavigationBar.Visible = True
@@ -64,17 +68,47 @@ Partial Class FrmImagePickerTest
         Me.ImagePicker1.TabIndex = 0
         Me.ImagePicker1.Text = "ImagePicker1"
         '
+        'ControlSlider1
+        '
+        Me.ControlSlider1.Child = Me.Label1
+        Me.ControlSlider1.Parent = Me.GroupBox1
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(20, 16)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(39, 13)
+        Me.Label1.TabIndex = 1
+        Me.Label1.Text = "Label1"
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.Label1)
+        Me.GroupBox1.Location = New System.Drawing.Point(387, 12)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(200, 100)
+        Me.GroupBox1.TabIndex = 3
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "GroupBox1"
+        '
         'FrmImagePickerTest
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(689, 413)
+        Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.ImagePicker1)
         Me.Name = "FrmImagePickerTest"
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
 
     Friend WithEvents ImagePicker1 As ControlLibrary.ImagePicker
+    Friend WithEvents ControlSlider1 As ControlLibrary.ControlSlider
+    Friend WithEvents Label1 As Label
+    Friend WithEvents GroupBox1 As GroupBox
 End Class

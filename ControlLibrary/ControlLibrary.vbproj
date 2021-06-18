@@ -73,6 +73,9 @@
     <Compile Include="DataGridViewNavigator.vb">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DateBox.vb">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FilterBuilder.vb" />
     <Compile Include="SequencedList.vb" />
     <Compile Include="Utility.vb" />
@@ -188,6 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Log.txt" />
+    <None Include="Resources\Calendar.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>
