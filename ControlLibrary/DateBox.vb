@@ -7,8 +7,6 @@ Imports System.Windows.Forms.Design
 
 
 Public Class DateBox
-
-
     Inherits MaskedTextBox
     Private _DesignerHost As IDesignerHost
     Friend WithEvents ControlContainer As New ControlContainer
@@ -66,11 +64,12 @@ Public Class DateBox
     End Sub
     Protected Overrides Sub OnKeyDown(e As KeyEventArgs)
         MyBase.OnKeyDown(e)
-        e.SuppressKeyPress = True
+
         If e.KeyCode = Keys.Enter Then
+
             EvaluationCalendar.Visible = True
             ControlContainer.ShowDropDown()
-
+            e.SuppressKeyPress = True
         End If
     End Sub
 

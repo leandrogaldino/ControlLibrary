@@ -17,7 +17,7 @@ Public Class FilterBuilder
         "String",
         "Char"
     }
-    Private NumericTypes As New List(Of String) From {
+    Private IntegerTypes As New List(Of String) From {
         "SByte",
         "Byte",
         "Short",
@@ -29,7 +29,9 @@ Public Class FilterBuilder
         "UInteger",
         "Long",
         "ULong",
-        "Single",
+        "Single"
+    }
+    Private DecimalTypes As New List(Of String) From {
         "Double",
         "Decimal"
     }
@@ -37,8 +39,10 @@ Public Class FilterBuilder
     Public Property MainTable As New Model.Table
     Public Property RelatedTables As New List(Of Model.Table)
     Public Property Wheres As New List(Of Model.WhereClause)
+
+    Public Property DecimalPlaces As Integer = 2
     Public Sub New(ByVal Obj As Object)
-        Dim DataTypes = NumericTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
+        Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DecimalTypes).Concat(DateTypes).Concat(BooleanTypes)
         MainTable.Name = Obj.GetType.Name
         MainTable.DisplayName = GetTableDisplayName(Obj.GetType.GetTypeInfo)
         Dim Columns() As String
@@ -57,7 +61,7 @@ Public Class FilterBuilder
 
     Private Function HasConstructor() As Boolean
         For Each Where In Wheres
-            If IsConstructor(Where.Value.Value) Or IsConstructor(Where.Value2.Value) Then
+            If IsConstructor(Where.Parameter.Value) Or IsConstructor(Where.Parameter2.Value) Then
                 Return True
             End If
         Next Where
@@ -74,131 +78,20 @@ Public Class FilterBuilder
         Return Strings.Mid(s, 2, s.Length - 2)
     End Function
 
-    Public Function GetCommandOBSOLETE(ByVal Connection As DbConnection) As DbCommand
-        Dim Cmd As DbCommand = Connection.CreateCommand
-        Dim Par As DbParameter
-        Dim Count As Long = 1
-        Dim Salt As Integer = 39
-        Dim LblTop As Integer = 9
-        Dim TxtTop As Integer = 28
+
+    Private Query As StringBuilder
+    Private ValueCounter As Integer
 
 
-        'Cmd.CommandText = GetSelectCommand()
-
-        If HasConstructor() Then
-            FrmFilter = New Form
-            FrmFilter.Size = New Size(200, 130)
-            FrmFilter.MaximizeBox = False
-            FrmFilter.MinimizeBox = False
-            FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
-            FrmFilter.ShowIcon = False
-            FrmFilter.ShowInTaskbar = False
-            FrmFilter.Font = New Font("Century Gothic", 9.75)
-            FrmFilter.BackColor = Color.White
-            FrmFilter.Text = "Parâmetros do Filtro"
+    Public Function GetResult() As Model.Result
+        Dim Result As New Model.Result
 
 
-        End If
-
-
-
-        For Each Where In Wheres
-            If Where.ComparsionOperator.Value <> "BETWEEN" Then
-                Par = Cmd.CreateParameter
-                Par.ParameterName = "@VALUE" & Count.ToString
-                If Strings.Left(Where.Value.ToString, 1) = "[" And Strings.Right(Where.Value.ToString, 1) = "]" Then
-                    LblValue = New Label
-                    LblValue.AutoSize = True
-                    LblValue.Text = Strings.Mid(Where.Value.ToString, 2, Where.Value.ToString.Length - 2)
-                    LblValue.Location = New Point(12, LblTop)
-                    FrmFilter.Controls.Add(LblValue)
-                    TxtValue = New TextBox
-                    TxtValue.Width = 157
-                    TxtValue.Location = New Point(15, TxtTop)
-                    TxtValue.DataBindings.Add("Text", Par, "Value")
-                    FrmFilter.Controls.Add(TxtValue)
-                    Where.Value = Nothing
-                    LblTop += Salt
-                    TxtTop += Salt
-                Else
-                    Par.Value = Where.Value
-                End If
-
-                Cmd.Parameters.Add(Par)
-                Count += 1
-            Else
-                Par = Cmd.CreateParameter
-                Par.ParameterName = "@VALUE" & Count.ToString
-                If Strings.Left(Where.Value.ToString, 1) = "[" And Strings.Right(Where.Value.ToString, 1) = "]" Then
-                    LblValue = New Label
-                    LblValue.AutoSize = True
-                    LblValue.Text = Strings.Mid(Where.Value.ToString, 2, Where.Value.ToString.Length - 2)
-                    LblValue.Location = New Point(12, LblTop)
-                    FrmFilter.Controls.Add(LblValue)
-                    TxtValue = New TextBox
-                    TxtValue.Width = 157
-                    TxtValue.Location = New Point(15, TxtTop)
-                    TxtValue.DataBindings.Add("Text", Par, "Value")
-                    FrmFilter.Controls.Add(TxtValue)
-                    Where.Value = Nothing
-
-                    LblTop += Salt
-                    TxtTop += Salt
-                Else
-                    Par.Value = Where.Value
-                End If
-                Cmd.Parameters.Add(Par)
-                Count += 1
-                Par = Cmd.CreateParameter
-                Par.ParameterName = "@VALUE" & Count.ToString
-                If Strings.Left(Where.Value2.ToString, 1) = "[" And Strings.Right(Where.Value2.ToString, 1) = "]" Then
-                    LblValue = New Label
-                    LblValue.AutoSize = True
-                    LblValue.Text = Strings.Mid(Where.Value2.ToString, 2, Where.Value2.ToString.Length - 2)
-                    LblValue.Location = New Point(12, LblTop)
-                    FrmFilter.Controls.Add(LblValue)
-                    TxtValue = New TextBox
-                    TxtValue.Width = 157
-                    TxtValue.Location = New Point(15, TxtTop)
-                    TxtValue.DataBindings.Add("Text", Par, "Value")
-                    FrmFilter.Controls.Add(TxtValue)
-                    Where.Value2 = Nothing
-                    LblTop += Salt
-                    TxtTop += Salt
-                Else
-                    Par.Value = Where.Value2
-                End If
-
-                Cmd.Parameters.Add(Par)
-                Count += 1
-            End If
-        Next
-        btntest = New Button
-        btntest.UseVisualStyleBackColor = True
-        btntest.Size = New Size(60, 28)
-        btntest.Location = New Point(60, TxtTop - 10)
-        btntest.Text = "Filtrar"
-        btntest.Dock = DockStyle.Bottom
-        FrmFilter.Controls.Add(btntest)
-        If Count > 1 Then
-            If FrmFilter.ShowDialog() = DialogResult.OK Then
-
-            End If
-        Else
-            If Wheres.Count = 0 Then Cmd.CommandText = Strings.Left(Cmd.CommandText, Cmd.CommandText.Length - 9) & ";"
-        End If
-        Return Cmd
-    End Function
-
-    Private btntest As Button
-    Public Function GetDbCommand(ByVal Connection As DbConnection) As DbCommand
-        Dim Command As DbCommand = Connection.CreateCommand
-        Dim parameter As DbParameter
-        Dim Query As New StringBuilder
-        Dim ValueCounter As Integer
-        Dim Salt As Integer = 39
-        Dim LblTop As Integer = 9
-        Dim TxtTop As Integer = 28
+        Dim Salt As Integer = 46
+        Dim LabelTop As Integer = 9
+        Dim ControlTop As Integer = 28
+        ValueCounter = 0
+        Query = New StringBuilder
 
         Query.AppendLine("SELECT ")
         For Each Column In MainTable.Columns
@@ -217,100 +110,170 @@ Public Class FilterBuilder
 
             Query.AppendLine("WHERE")
 
-
+            'se houver constructor entao apresenta o form para substituir o que esta nos values pelos valores reais.
             If HasConstructor() Then
-                FrmFilter = New Form
-                FrmFilter.Size = New Size(200, 130)
-                FrmFilter.MaximizeBox = False
-                FrmFilter.MinimizeBox = False
-                FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
-                FrmFilter.ShowIcon = False
-                FrmFilter.ShowInTaskbar = False
-                FrmFilter.Font = New Font("Century Gothic", 9.75)
-                FrmFilter.BackColor = Color.White
-                FrmFilter.Text = "Parâmetros do Filtro - " & FilterName
-            End If
+                ConstructorForm = New Form
+                ConstructorForm.Size = New Size(400, 300)
+                ConstructorForm.MaximizeBox = False
+                ConstructorForm.MinimizeBox = False
+                'ConstructorForm.FormBorderStyle = FormBorderStyle.FixedSingle
+                ConstructorForm.ShowIcon = False
+                ConstructorForm.ShowInTaskbar = False
+                ConstructorForm.Font = New Font("Century Gothic", 9.75)
+                ConstructorForm.BackColor = Color.White
+                ConstructorForm.Text = "Parâmetros do Filtro - " & FilterName
 
-            For Each Where In Wheres
-                If Where.ComparsionOperator.Value = "BETWEEN" Then
-                    If IsConstructor(Where.Value.Value) Then
 
-                        Par.ParameterName = "@VALUE" & Count.ToString
+                For Each Where In Wheres
 
-                        LblValue = New Label
-                        LblValue.AutoSize = True
-                        LblValue.Text = Strings.Mid(Where.Value.ToString, 2, Where.Value.ToString.Length - 2)
-                        LblValue.Location = New Point(12, LblTop)
-                        FrmFilter.Controls.Add(LblValue)
-                        TxtValue = New TextBox
-                        TxtValue.Width = 157
-                        TxtValue.Location = New Point(15, TxtTop)
 
-                        TxtValue.DataBindings.Add("Text", Where.Value.Value, "Value")
-                        FrmFilter.Controls.Add(TxtValue)
-                        Where.Value = Nothing
-                        LblTop += Salt
-                        TxtTop += Salt
+
+
+                    If Where.ComparsionOperator.Value = "BETWEEN" Then
+                        If IsConstructor(Where.Parameter.Value) Then
+                            ConstructorLabel = New Label
+                            ConstructorLabel.AutoSize = True
+                            ConstructorLabel.Text = Strings.Mid(Where.Parameter.Value, 2, Where.Parameter.Value.Length - 2)
+                            ConstructorLabel.Location = New Point(12, LabelTop)
+                            ConstructorForm.Controls.Add(ConstructorLabel)
+                            LabelTop += Salt
+
+                            ConstructorLabel = New Label
+                            ConstructorLabel.AutoSize = True
+                            ConstructorLabel.Text = Strings.Mid(Where.Parameter2.Value, 2, Where.Parameter2.Value.Length - 2)
+                            ConstructorLabel.Location = New Point(12, LabelTop)
+                            ConstructorForm.Controls.Add(ConstructorLabel)
+                            LabelTop += Salt
+
+                            If Where.Column.DataType = "Integer" Then
+
+                                ConstructorDecimalBox = New DecimalBox
+                                ConstructorDecimalBox.Width = 100
+                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                                ConstructorDecimalBox.DecimalPlaces = 0
+                                ConstructorDecimalBox.Tag = Where.Parameter
+                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                                ControlTop += Salt
+
+                                ConstructorDecimalBox = New DecimalBox
+                                ConstructorDecimalBox.Width = 100
+                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                                ConstructorDecimalBox.DecimalPlaces = 0
+                                ConstructorDecimalBox.Tag = Where.Parameter2
+                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                                ControlTop += Salt
+                            ElseIf Where.Column.DataType = "Decimal" Then
+
+                                ConstructorDecimalBox = New DecimalBox
+                                ConstructorDecimalBox.Width = 100
+                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                                ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
+                                ConstructorDecimalBox.Tag = Where.Parameter
+                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                                ControlTop += Salt
+
+                                ConstructorDecimalBox = New DecimalBox
+                                ConstructorDecimalBox.Width = 100
+                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                                ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
+                                ConstructorDecimalBox.Tag = Where.Parameter2
+                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                                ControlTop += Salt
+
+
+                            ElseIf Where.Column.DataType = "Date" Then
+
+                                ConstructorDateBox = New DateBox
+                                ConstructorDateBox.Width = 100
+                                ConstructorDateBox.Location = New Point(15, ControlTop)
+                                ConstructorDateBox.Tag = Where.Parameter
+                                ConstructorForm.Controls.Add(ConstructorDateBox)
+                                ControlTop += Salt
+
+                                ConstructorDateBox = New DateBox
+                                ConstructorDateBox.Width = 100
+                                ConstructorDateBox.Location = New Point(15, ControlTop)
+                                ConstructorDateBox.Tag = Where.Parameter2
+                                ConstructorForm.Controls.Add(ConstructorDateBox)
+                                ControlTop += Salt
+                            End If
+
+                        End If
+
+                    Else 'se nao for between
+
 
 
                     End If
+                Next Where
+
+                ConstructorButton = New Button
+                ConstructorButton.UseVisualStyleBackColor = True
+                ConstructorButton.Size = New Size(60, 30)
+
+                ConstructorButton.Location = New Point(15, ControlTop - 10)
+                ConstructorButton.Width = ConstructorForm.Width - 47
+                ConstructorButton.Text = "Filtrar"
+                ConstructorButton.DialogResult = DialogResult.OK
+                'ConstructorButton.Dock = DockStyle.Bottom
+                ConstructorForm.Controls.Add(ConstructorButton)
+
+                If ConstructorForm.ShowDialog() = DialogResult.OK Then
+
+
+                    For Each c As Control In ConstructorForm.Controls
+
+                        If c.Tag IsNot Nothing AndAlso c.Tag.GetType Is GetType(Model.Parameter) Then
+
+                            If c.GetType = GetType(DateBox) Then
+                                If c.Text = "  /  /" Then
+                                    CType(c.Tag, Model.Parameter).Value = "1900-01-01"
+                                Else
+                                    CType(c.Tag, Model.Parameter).Value = CDate(c.Text).ToString("yyyy-MM-dd")
+                                End If
+                            ElseIf c.GetType = GetType(DecimalBox) Then
+                                If CType(c, DecimalBox).DecimalPlaces > 0 And CInt(CType(c, DecimalBox).Text) = 0 Then
+                                    CType(c.Tag, Model.Parameter).Value = "0"
+                                Else
+                                    CType(c.Tag, Model.Parameter).Value = c.Text
+                                End If
+                            Else
+                                CType(c.Tag, Model.Parameter).Value = c.Text
+                            End If
+                            CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
+
+
+                            ValueCounter += 1
+                        End If
+
+
+                    Next c
+
+
+                Else
+                    Return Nothing
                 End If
-            Next Where
 
-
-
-
-            'For i = 0 To Wheres.Count - 1
-
-            'If Wheres(i).ComparsionOperator.Value = "BETWEEN" Then
-
-
-
-            'End If
-
-
-
-
-
-
-
-            'Query.Append(vbTab & Wheres(i).Column.Name & " " & Wheres(i).ComparsionOperator.Value & " ")
-
-
-
-
-
-
-            '    If Wheres(i).Value = Nothing Then
-            '        Query.Append("@Value")
-            '    Else
-            '        Query.Append(Wheres(i).Value)
-            '    End If
-            '    If Wheres(i).ComparsionOperator.Value = "BETWEEN" Then
-            '        Query.Append(" AND ")
-            '        If Wheres(i).Value2 = Nothing Then
-            '            Query.Append("@Value2")
-            '        Else
-            '            Query.Append(Wheres(i).Value2)
-            '        End If
-            '    End If
-
-            '    If i < Wheres.Count - 1 Then
-            '        Query.AppendLine(" " & Wheres(i).LogicalOperator.Value)
-            '    Else
-            '        Query.AppendLine(";")
-            '    End If
-            'Next i
+            End If
 
 
         End If
 
 
 
-        Return Command
+
+
+        'daqui pra baixo contruir a query a partir do where
+
+        Result.CommandText = Query.ToString
+
+        Return Result
     End Function
+
+
+
     Private Sub FillRelatedTable(ByVal obj As Object, ByVal DisplayColumns() As String)
-        Dim DataTypes = NumericTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
+        Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
         Dim Table As Model.Table
         Dim Columns() As String = {}
         Dim IsVisible As Boolean
@@ -343,8 +306,10 @@ Public Class FilterBuilder
         Return Dir
     End Function
     Private Function GetColumnType(ByVal SistemType As String) As String
-        If NumericTypes.Contains(SistemType) Then
-            Return "Numeric"
+        If IntegerTypes.Contains(SistemType) Then
+            Return "Integer"
+        ElseIf DecimalTypes.Contains(SistemType) Then
+            Return "Decimal"
         ElseIf TextTypes.Contains(SistemType) Then
             Return "Text"
         ElseIf DateTypes.Contains(SistemType) Then
@@ -392,8 +357,8 @@ Public Class FilterBuilder
         Public Class WhereClause
             Public Property Column As Column
             Public Property ComparsionOperator As New [Operator]
-            Public Property Value As DbParameter
-            Public Property Value2 As DbParameter
+            Public Property Parameter As New Parameter
+            Public Property Parameter2 As New Parameter
             Public Property LogicalOperator As New [Operator]
             Public Overrides Function ToString() As String
                 Dim p1 As String = " é "
@@ -417,9 +382,9 @@ Public Class FilterBuilder
                         p2 = " a "
                 End Select
                 If ComparsionOperator.Value <> "BETWEEN" Then
-                    s = Column.DisplayName & p1 & ComparsionOperator.Display & p2 & Value.Value & vbTab & LogicalOperator.Display
+                    s = Column.DisplayName & p1 & ComparsionOperator.Display & p2 & Parameter.Value & vbTab & LogicalOperator.Display
                 Else
-                    s = Column.DisplayName & " Está " & ComparsionOperator.Display & " " & Value.Value & " e " & Value2 & vbTab & LogicalOperator.Display
+                    s = Column.DisplayName & " Está " & ComparsionOperator.Display & " " & Parameter.Value & " e " & Parameter2.Value & vbTab & LogicalOperator.Display
                 End If
                 Return s
             End Function
@@ -451,6 +416,15 @@ Public Class FilterBuilder
                 Dim C() As String = {ColumnName}
                 Me.ColumnName = C
             End Sub
+        End Class
+
+        Public Class Result
+            Public Property CommandText As String
+            Public Property Parameters As New List(Of Parameter)
+        End Class
+        Public Class Parameter
+            Public Property Name As String
+            Public Property Value As String
         End Class
     End Class
 
@@ -747,10 +721,15 @@ Public Class FilterBuilder
     Friend WithEvents CbxOperador As ComboBox
     Friend WithEvents LblValue As Label
     Friend WithEvents LblValue2 As Label
-
-
     Friend WithEvents LbxWheres As ListBox
     Friend WithEvents PnDgvWheres As Panel
     Friend WithEvents TsBar As ToolStrip
     Friend WithEvents BtnDelete As ToolStripButton
+
+    Friend WithEvents ConstructorForm As Form
+    Friend WithEvents ConstructorDateBox As DateBox
+    Friend WithEvents ConstructorDecimalBox As DecimalBox
+    Friend WithEvents ConstructorTextBox As TextBox
+    Friend WithEvents ConstructorLabel As Label
+    Friend WithEvents ConstructorButton As Button
 End Class

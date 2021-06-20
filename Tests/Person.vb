@@ -10,4 +10,5 @@ Public Class Person
     Public Property Birth As Date
     <DisplayName("Compressor")>
     Public Property Compressor As Compressor
+    Public Property Altura As Decimal
 End Class
