@@ -130,6 +130,7 @@ Public Class FilterBuilder
 
 
                     If Where.ComparsionOperator.Value = "BETWEEN" Then
+                        dentro desse If esta errado, estou testando somente se o parameter e um construtor mas estou criando para o parameter2 tambem.
                         If IsConstructor(Where.Parameter.Value) Then
                             ConstructorLabel = New Label
                             ConstructorLabel.AutoSize = True
