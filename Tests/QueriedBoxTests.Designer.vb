@@ -22,17 +22,7 @@ Partial Class QueriedBoxTests
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.Button1 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
-        '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(97, 56)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(75, 23)
-        Me.Button1.TabIndex = 0
-        Me.Button1.Text = "Button1"
-        Me.Button1.UseVisualStyleBackColor = True
         '
         'QueriedBoxTests
         '
@@ -47,6 +37,4 @@ Partial Class QueriedBoxTests
         Me.ResumeLayout(False)
 
     End Sub
-
-    Friend WithEvents Button1 As Button
 End Class

@@ -113,7 +113,7 @@ Public Class FilterBuilder
             'se houver constructor entao apresenta o form para substituir o que esta nos values pelos valores reais.
             If HasConstructor() Then
                 ConstructorForm = New Form
-                ConstructorForm.Size = New Size(400, 300)
+                ConstructorForm.Size = New Size(400, 150 - Salt)
                 ConstructorForm.MaximizeBox = False
                 ConstructorForm.MinimizeBox = False
                 'ConstructorForm.FormBorderStyle = FormBorderStyle.FixedSingle
@@ -127,17 +127,72 @@ Public Class FilterBuilder
                 For Each Where In Wheres
 
 
+                    If IsConstructor(Where.Parameter.Value) Then
+                        ConstructorLabel = New Label
+                        ConstructorLabel.AutoSize = True
+                        ConstructorLabel.Text = Strings.Mid(Where.Parameter.Value, 2, Where.Parameter.Value.Length - 2)
+                        ConstructorLabel.Location = New Point(12, LabelTop)
+                        ConstructorForm.Controls.Add(ConstructorLabel)
+                        LabelTop += Salt
+
+                        If Where.Column.DataType = "Integer" Then
+
+                            ConstructorDecimalBox = New DecimalBox
+                            ConstructorDecimalBox.Width = 100
+                            ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                            ConstructorDecimalBox.DecimalPlaces = 0
+                            ConstructorDecimalBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+                        ElseIf Where.Column.DataType = "Decimal" Then
+
+                            ConstructorDecimalBox = New DecimalBox
+                            ConstructorDecimalBox.Width = 100
+                            ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                            ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
+                            ConstructorDecimalBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
 
 
-                    If Where.ComparsionOperator.Value = "BETWEEN" Then
-                        dentro desse If esta errado, estou testando somente se o parameter e um construtor mas estou criando para o parameter2 tambem.
-                        If IsConstructor(Where.Parameter.Value) Then
-                            ConstructorLabel = New Label
-                            ConstructorLabel.AutoSize = True
-                            ConstructorLabel.Text = Strings.Mid(Where.Parameter.Value, 2, Where.Parameter.Value.Length - 2)
-                            ConstructorLabel.Location = New Point(12, LabelTop)
-                            ConstructorForm.Controls.Add(ConstructorLabel)
-                            LabelTop += Salt
+
+                        ElseIf Where.Column.DataType = "Date" Then
+
+                            ConstructorDateBox = New DateBox
+                            ConstructorDateBox.Width = 100
+                            ConstructorDateBox.Location = New Point(15, ControlTop)
+                            ConstructorDateBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorDateBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+                        ElseIf Where.Column.DataType = "Text" Then
+                            ConstructorTextBox = New TextBox
+                            ConstructorTextBox.Width = ConstructorForm.Width - 47
+                            ConstructorTextBox.Location = New Point(15, ControlTop)
+                            ConstructorTextBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorTextBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+                        End If
+
+                    Else 'se nao tiver constructor no no parameter
+
+
+                        Where.Parameter.Name = "@VALUE" & ValueCounter
+                        ValueCounter += 1
+
+
+
+                    End If
+
+                    If IsConstructor(Where.Parameter2.Value) Then
+
+                        If Where.ComparsionOperator.Value = "BETWEEN" Then
 
                             ConstructorLabel = New Label
                             ConstructorLabel.AutoSize = True
@@ -146,15 +201,11 @@ Public Class FilterBuilder
                             ConstructorForm.Controls.Add(ConstructorLabel)
                             LabelTop += Salt
 
-                            If Where.Column.DataType = "Integer" Then
 
-                                ConstructorDecimalBox = New DecimalBox
-                                ConstructorDecimalBox.Width = 100
-                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
-                                ConstructorDecimalBox.DecimalPlaces = 0
-                                ConstructorDecimalBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                ControlTop += Salt
+                        End If
+
+                        If Where.Column.DataType = "Integer" Then
+
 
                                 ConstructorDecimalBox = New DecimalBox
                                 ConstructorDecimalBox.Width = 100
@@ -162,16 +213,12 @@ Public Class FilterBuilder
                                 ConstructorDecimalBox.DecimalPlaces = 0
                                 ConstructorDecimalBox.Tag = Where.Parameter2
                                 ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                ControlTop += Salt
-                            ElseIf Where.Column.DataType = "Decimal" Then
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
 
-                                ConstructorDecimalBox = New DecimalBox
-                                ConstructorDecimalBox.Width = 100
-                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
-                                ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
-                                ConstructorDecimalBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                ControlTop += Salt
+                        ElseIf Where.Column.DataType = "Decimal" Then
+
+
 
                                 ConstructorDecimalBox = New DecimalBox
                                 ConstructorDecimalBox.Width = 100
@@ -179,33 +226,31 @@ Public Class FilterBuilder
                                 ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
                                 ConstructorDecimalBox.Tag = Where.Parameter2
                                 ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                ControlTop += Salt
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
 
 
-                            ElseIf Where.Column.DataType = "Date" Then
+                        ElseIf Where.Column.DataType = "Date" Then
 
-                                ConstructorDateBox = New DateBox
-                                ConstructorDateBox.Width = 100
-                                ConstructorDateBox.Location = New Point(15, ControlTop)
-                                ConstructorDateBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorDateBox)
-                                ControlTop += Salt
 
                                 ConstructorDateBox = New DateBox
                                 ConstructorDateBox.Width = 100
                                 ConstructorDateBox.Location = New Point(15, ControlTop)
                                 ConstructorDateBox.Tag = Where.Parameter2
                                 ConstructorForm.Controls.Add(ConstructorDateBox)
-                                ControlTop += Salt
-                            End If
-
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
                         End If
 
-                    Else 'se nao for between
+                        Else 'se nao tiver constructor no no Parameter2
 
 
-
+                            Where.Parameter2.Name = "@VALUE" & ValueCounter
+                        ValueCounter += 1
                     End If
+
+
+
                 Next Where
 
                 ConstructorButton = New Button
@@ -233,22 +278,25 @@ Public Class FilterBuilder
                                     CType(c.Tag, Model.Parameter).Value = CDate(c.Text).ToString("yyyy-MM-dd")
                                 End If
                             ElseIf c.GetType = GetType(DecimalBox) Then
-                                If CType(c, DecimalBox).DecimalPlaces > 0 And CInt(CType(c, DecimalBox).Text) = 0 Then
-                                    CType(c.Tag, Model.Parameter).Value = "0"
-                                Else
-                                    CType(c.Tag, Model.Parameter).Value = c.Text
-                                End If
+
+
+                                CType(c.Tag, Model.Parameter).Value = CDec(c.Text)
+
+
                             Else
                                 CType(c.Tag, Model.Parameter).Value = c.Text
                             End If
                             CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
 
-
                             ValueCounter += 1
+
+                            Result.Parameters.Add(c.Tag)
                         End If
 
 
                     Next c
+
+                    'pegar os parametros que foram passados diretamente (sem connstrutor)
 
 
                 Else
@@ -423,9 +471,11 @@ Public Class FilterBuilder
             Public Property CommandText As String
             Public Property Parameters As New List(Of Parameter)
         End Class
+
+
         Public Class Parameter
             Public Property Name As String
-            Public Property Value As String
+            Public Property Value As Object
         End Class
     End Class
 
