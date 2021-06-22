@@ -21,11 +21,19 @@ Public Class QueriedBoxTests
         Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
         Where.ComparsionOperator.Display = "Contem"
         Where.ComparsionOperator.Value = "LIKE"
+        Where.Parameter.Value = "[Leandro]"
         Where.LogicalOperator.Display = "e"
         Where.LogicalOperator.Value = "AND"
-        Where.Parameter.Value = "Leandro"
-
         Filter.Wheres.Add(Where)
+
+        Where = New FilterBuilder.Model.WhereClause
+        Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
+        Where.ComparsionOperator.Display = "Contem"
+        Where.ComparsionOperator.Value = "LIKE"
+        Where.Parameter.Value = "[Uedja]"
+        Filter.Wheres.Add(Where)
+
+
         Dim r = Filter.GetResult
         If r IsNot Nothing Then
             MsgBox(r.CommandText)

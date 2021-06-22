@@ -116,7 +116,7 @@ Public Class FilterBuilder
                 ConstructorForm.Size = New Size(400, 150 - Salt)
                 ConstructorForm.MaximizeBox = False
                 ConstructorForm.MinimizeBox = False
-                'ConstructorForm.FormBorderStyle = FormBorderStyle.FixedSingle
+                ConstructorForm.FormBorderStyle = FormBorderStyle.FixedSingle
                 ConstructorForm.ShowIcon = False
                 ConstructorForm.ShowInTaskbar = False
                 ConstructorForm.Font = New Font("Century Gothic", 9.75)
@@ -190,9 +190,14 @@ Public Class FilterBuilder
 
                     End If
 
-                    If IsConstructor(Where.Parameter2.Value) Then
 
-                        If Where.ComparsionOperator.Value = "BETWEEN" Then
+
+
+                    If Where.ComparsionOperator.Value = "BETWEEN" Then
+
+                        If IsConstructor(Where.Parameter2.Value) Then
+
+
 
                             ConstructorLabel = New Label
                             ConstructorLabel.AutoSize = True
@@ -202,9 +207,9 @@ Public Class FilterBuilder
                             LabelTop += Salt
 
 
-                        End If
 
-                        If Where.Column.DataType = "Integer" Then
+
+                            If Where.Column.DataType = "Integer" Then
 
 
                                 ConstructorDecimalBox = New DecimalBox
@@ -213,10 +218,10 @@ Public Class FilterBuilder
                                 ConstructorDecimalBox.DecimalPlaces = 0
                                 ConstructorDecimalBox.Tag = Where.Parameter2
                                 ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                            ControlTop += Salt
-                            ConstructorForm.Height += Salt
+                                ControlTop += Salt
+                                ConstructorForm.Height += Salt
 
-                        ElseIf Where.Column.DataType = "Decimal" Then
+                            ElseIf Where.Column.DataType = "Decimal" Then
 
 
 
@@ -226,11 +231,11 @@ Public Class FilterBuilder
                                 ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
                                 ConstructorDecimalBox.Tag = Where.Parameter2
                                 ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                            ControlTop += Salt
-                            ConstructorForm.Height += Salt
+                                ControlTop += Salt
+                                ConstructorForm.Height += Salt
 
 
-                        ElseIf Where.Column.DataType = "Date" Then
+                            ElseIf Where.Column.DataType = "Date" Then
 
 
                                 ConstructorDateBox = New DateBox
@@ -238,19 +243,19 @@ Public Class FilterBuilder
                                 ConstructorDateBox.Location = New Point(15, ControlTop)
                                 ConstructorDateBox.Tag = Where.Parameter2
                                 ConstructorForm.Controls.Add(ConstructorDateBox)
-                            ControlTop += Salt
-                            ConstructorForm.Height += Salt
-                        End If
+                                ControlTop += Salt
+                                ConstructorForm.Height += Salt
+                            End If
 
                         Else 'se nao tiver constructor no no Parameter2
 
 
                             Where.Parameter2.Name = "@VALUE" & ValueCounter
-                        ValueCounter += 1
+                            ValueCounter += 1
+                        End If
+
+
                     End If
-
-
-
                 Next Where
 
                 ConstructorButton = New Button
@@ -284,19 +289,54 @@ Public Class FilterBuilder
 
 
                             Else
+                                If c.Text = Nothing Then
+                                    For Each w In Wheres
+                                        If w.Parameter.Equals(c.Tag) Then
+                                            Wheres.Remove(w)
+                                            Exit For
+                                        End If
+                                    Next
+
+                                End If
                                 CType(c.Tag, Model.Parameter).Value = c.Text
                             End If
                             CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
 
                             ValueCounter += 1
 
-                            Result.Parameters.Add(c.Tag)
+                            'Result.Parameters.Add(c.Tag)
                         End If
 
 
                     Next c
 
-                    'pegar os parametros que foram passados diretamente (sem connstrutor)
+
+
+                    For Each Where In Wheres
+                        If Where.ComparsionOperator.Value = "BETWEEN" Then
+                            If Where.Parameter.Name <> Nothing And Where.Parameter.Value <> Nothing And Where.Parameter2.Name <> Nothing And Where.Parameter2.Value <> Nothing Then
+                                Result.Parameters.Add(Where.Parameter)
+                                Query.Append(vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name)
+
+                                Result.Parameters.Add(Where.Parameter2)
+                                Query.AppendLine(" AND " & Where.Parameter2.Name & " " & Where.LogicalOperator.Value)
+                            End If
+
+                        Else
+                            If Where.Parameter.Name <> Nothing And Where.Parameter.Value <> Nothing Then
+                                Result.Parameters.Add(Where.Parameter)
+                                Query.AppendLine(vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name & " " & Where.LogicalOperator.Value)
+                            End If
+
+                        End If
+
+
+
+
+                        If Where Is Wheres.Last Then
+                            Query.Insert(Query.Length - 3, ";")
+                        End If
+                    Next Where
 
 
                 Else
@@ -308,11 +348,6 @@ Public Class FilterBuilder
 
         End If
 
-
-
-
-
-        'daqui pra baixo contruir a query a partir do where
 
         Result.CommandText = Query.ToString
 
