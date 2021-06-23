@@ -11,4 +11,5 @@ Public Class Person
     <DisplayName("Compressor")>
     Public Property Compressor As Compressor
     Public Property Altura As Decimal
+    Public Property IsCustomer As Boolean
 End Class

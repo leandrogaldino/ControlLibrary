@@ -7,31 +7,37 @@ Public Class QueriedBoxTests
         Filter = New FilterBuilder(Person)
         Filter.FilterName = "Filtro Personalizado"
 
-        Where = New FilterBuilder.Model.WhereClause
-        Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.ID")
-        Where.ComparsionOperator.Display = "Entre"
-        Where.ComparsionOperator.Value = "BETWEEN"
-        Where.LogicalOperator.Display = "e"
-        Where.LogicalOperator.Value = "AND"
-        Where.Parameter.Value = "[Valor Inicial]"
-        Where.Parameter2.Value = "[Valor Final]"
-        Filter.Wheres.Add(Where)
+        Filter.ShowDialog()
 
-        Where = New FilterBuilder.Model.WhereClause
-        Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
-        Where.ComparsionOperator.Display = "Contem"
-        Where.ComparsionOperator.Value = "LIKE"
-        Where.Parameter.Value = "[Leandro]"
-        Where.LogicalOperator.Display = "e"
-        Where.LogicalOperator.Value = "AND"
-        Filter.Wheres.Add(Where)
 
-        Where = New FilterBuilder.Model.WhereClause
-        Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
-        Where.ComparsionOperator.Display = "Contem"
-        Where.ComparsionOperator.Value = "LIKE"
-        Where.Parameter.Value = "[Uedja]"
-        Filter.Wheres.Add(Where)
+
+        'Where = New FilterBuilder.Model.WhereClause
+        'Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.IsCustomer")
+        'Where.ComparsionOperator.Display = "Igual"
+        'Where.ComparsionOperator.Value = "="
+        'Where.LogicalOperator.Display = "e"
+        'Where.LogicalOperator.Value = "AND"
+        'Where.Parameter.Value = "[Valor Inicial]"
+        'Where.Parameter2.Value = "[Valor Final]"
+        'Filter.Wheres.Add(Where)
+
+        'Where = New FilterBuilder.Model.WhereClause
+        'Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
+        'Where.ComparsionOperator.Display = "Contem"
+        'Where.ComparsionOperator.Value = "LIKE"
+        'Where.Parameter.Value = "[Leandro]"
+        'Where.LogicalOperator.Display = "e"
+        'Where.LogicalOperator.Value = "AND"
+        'Filter.Wheres.Add(Where)
+
+        'Where = New FilterBuilder.Model.WhereClause
+        'Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
+        'Where.ComparsionOperator.Display = "Contem"
+        'Where.ComparsionOperator.Value = "LIKE"
+        'Where.Parameter.Value = "[Uedja]"
+        'Filter.Wheres.Add(Where)
+
+        'Filter.FreeWhereClause = "Person.ID = 10"
 
 
         Dim r = Filter.GetResult
@@ -41,5 +47,6 @@ Public Class QueriedBoxTests
 
         'Application.Exit()
     End Sub
+
 
 End Class
