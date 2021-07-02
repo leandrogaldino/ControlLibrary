@@ -48,7 +48,10 @@ Public Class DecimalBox
                     MyBase.Text = FormatNumber(Text, DecimalPlaces, TriState.True)
                 Else
                     _DecimalValue = 0
-                    MyBase.Text = FormatNumber(0, DecimalPlaces, TriState.True)
+                    If Not MyBase.Text = Nothing Then
+                        MyBase.Text = FormatNumber(0, DecimalPlaces, TriState.True)
+                    End If
+
                 End If
             Else
                 TextAlign = HorizontalAlignment.Left
@@ -72,7 +75,10 @@ Public Class DecimalBox
             If value > 99 Then value = 99
             _DecimalPlaces = value
             If DecimalOnly Then
-                MyBase.Text = FormatNumber(DecimalValue, value, TriState.True)
+                If Not MyBase.Text = Nothing Then
+                    MyBase.Text = FormatNumber(DecimalValue, value, TriState.True)
+                End If
+
             End If
             _SuspendValueChange = False
         End Set
@@ -101,6 +107,9 @@ Public Class DecimalBox
         End Set
     End Property
 
+
+
+
     <RefreshProperties(RefreshProperties.All)>
     Public Overrides Property Text As String
         Get
@@ -114,7 +123,8 @@ Public Class DecimalBox
                         MyBase.Text = FormatNumber(value, DecimalPlaces, TriState.True)
                     Else
                         _DecimalValue = 0
-                        MyBase.Text = FormatNumber(0, DecimalPlaces, TriState.True)
+                        'MyBase.Text = FormatNumber(0, DecimalPlaces, TriState.True)
+                        MyBase.Text = Nothing
                     End If
                 Else
                     _DecimalValue = 0
@@ -127,8 +137,15 @@ Public Class DecimalBox
                         MyBase.Text = FormatNumber(value, DecimalPlaces, TriState.True)
                     End If
                 Else
-                    _DecimalValue = 0
-                    MyBase.Text = value
+                    If value = Nothing Then
+                        _DecimalValue = 0
+                        MyBase.Text = Nothing
+                    Else
+                        _DecimalValue = 0
+                        MyBase.Text = value
+                    End If
+
+
                 End If
             End If
         End Set
@@ -154,13 +171,17 @@ Public Class DecimalBox
 
         MyBase.OnTextChanged(e)
     End Sub
+    <DebuggerStepThrough>
     Protected Overrides Sub OnLostFocus(e As EventArgs)
         MyBase.OnLostFocus(e)
         _SuspendValueChange = True
         If DecimalOnly Then
             If Not IsNumeric(Text) Then
                 _DecimalValue = 0
-                MyBase.Text = FormatNumber(0, DecimalPlaces, True)
+                If Not MyBase.Text = Nothing Then
+                    MyBase.Text = FormatNumber(0, DecimalPlaces, True)
+                End If
+
             Else
                 If Text <> FormatNumber(_DecimalValue, DecimalPlaces, True) Then _DecimalValue = CDec(Text)
                 MyBase.Text = FormatNumber(Text, DecimalPlaces, TriState.True)

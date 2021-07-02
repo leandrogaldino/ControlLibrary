@@ -5,38 +5,329 @@ Imports System.Windows.Forms
 
 Public Class FilterBuilder
 
+    Public Function GetResult() As Model.Result
+        Dim Result As New Model.Result
+
+        Dim Salt As Integer = 46
+        Dim LabelTop As Integer = 9
+        Dim ControlTop As Integer = 28
+        ValueCounter = 0
+
+        Query = "SELECT " & vbNewLine
+        For Each Column In MainTable.Columns
+            Query += vbTab & Column.Name & ", " & vbNewLine
+        Next Column
+        For Each Table In RelatedTables
+            For Each Column In Table.Columns
+                If Column.Visible Then
+                    Query += vbTab & Column.Name & ", " & vbNewLine
+                End If
+            Next Column
+        Next Table
+        Query = Strings.Left(Query, Query.Length - 1)
+        Query += "FROM "
+        Query += MainTable.Name & vbNewLine
+        RelatedTables.ForEach(Sub(x) Query += "JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID")
+        If FreeWhereClause = Nothing Then
+            If Wheres.Count > 0 Then
+                Query += vbNewLine & "WHERE" & vbNewLine
+                'se houver constructor entao apresenta o form para substituir o que esta nos values pelos valores reais.
+
+                If HasConstructor() Then
+                    ConstructorForm = New Form
+                    ConstructorForm.Size = New Size(400, 150 - Salt)
+                    ConstructorForm.MaximizeBox = False
+                    ConstructorForm.MinimizeBox = False
+                    ConstructorForm.FormBorderStyle = FormBorderStyle.FixedSingle
+                    ConstructorForm.ShowIcon = False
+                    ConstructorForm.ShowInTaskbar = False
+                    ConstructorForm.Font = New Font("Century Gothic", 9.75)
+                    ConstructorForm.BackColor = Color.White
+                    ConstructorForm.Text = "Parâmetros do Filtro - " & FilterName
+                End If
+
+                For Each Where In Wheres
+                    If IsConstructor(Where.Parameter.Value) Then
+                        ConstructorLabel = New Label
+                        ConstructorLabel.AutoSize = True
+                        ConstructorLabel.Text = Strings.Mid(Where.Parameter.Value, 2, Where.Parameter.Value.Length - 2)
+                        ConstructorLabel.Location = New Point(12, LabelTop)
+                        ConstructorForm.Controls.Add(ConstructorLabel)
+                        LabelTop += Salt
+
+                        If Where.Column.DataType = "Integer" Then
+
+                            ConstructorDecimalBox = New DecimalBox
+                            ConstructorDecimalBox.Width = 100
+                            ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                            ConstructorDecimalBox.DecimalPlaces = 0
+                            ConstructorDecimalBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+                        ElseIf Where.Column.DataType = "Decimal" Then
+
+                            ConstructorDecimalBox = New DecimalBox
+                            ConstructorDecimalBox.Width = 100
+                            ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                            ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
+                            ConstructorDecimalBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+
+
+                        ElseIf Where.Column.DataType = "Date" Then
+
+                            ConstructorDateBox = New DateBox
+                            ConstructorDateBox.Width = 100
+                            ConstructorDateBox.Location = New Point(15, ControlTop)
+                            ConstructorDateBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorDateBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+                        ElseIf Where.Column.DataType = "Text" Then
+                            ConstructorTextBox = New TextBox
+                            ConstructorTextBox.Width = ConstructorForm.Width - 47
+                            ConstructorTextBox.Location = New Point(15, ControlTop)
+                            ConstructorTextBox.Tag = Where.Parameter
+                            ConstructorForm.Controls.Add(ConstructorTextBox)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+                        ElseIf Where.Column.DataType = "Boolean" Then
+                            ConstructorToggle = New ToggleButton
+                            ConstructorToggle.Width = 100
+                            ConstructorToggle.Location = New Point(15, ControlTop)
+                            ConstructorToggle.Tag = Where.Parameter
+                            ConstructorToggle.OnStyle.Text = "Sim"
+                            ConstructorToggle.OffStyle.Text = "Não"
+                            ConstructorToggle.State = ToggleButton.ToggleButtonStates.ON
+                            ConstructorForm.Controls.Add(ConstructorToggle)
+                            ControlTop += Salt
+                            ConstructorForm.Height += Salt
+
+
+                        End If
+
+                    Else 'se nao tiver constructor no no parameter
+
+
+                        Where.Parameter.Name = "@VALUE" & ValueCounter
+                        ValueCounter += 1
+
+
+
+                    End If
+
+
+
+
+                    If Where.ComparsionOperator.Value = "BETWEEN" Then
+
+                        If IsConstructor(Where.Parameter2.Value) Then
+
+
+
+                            ConstructorLabel = New Label
+                            ConstructorLabel.AutoSize = True
+                            ConstructorLabel.Text = Strings.Mid(Where.Parameter2.Value, 2, Where.Parameter2.Value.Length - 2)
+                            ConstructorLabel.Location = New Point(12, LabelTop)
+                            ConstructorForm.Controls.Add(ConstructorLabel)
+                            LabelTop += Salt
+
+
+
+
+                            If Where.Column.DataType = "Integer" Then
+
+
+                                ConstructorDecimalBox = New DecimalBox
+                                ConstructorDecimalBox.Width = 100
+                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                                ConstructorDecimalBox.DecimalPlaces = 0
+                                ConstructorDecimalBox.Tag = Where.Parameter2
+                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                                ControlTop += Salt
+                                ConstructorForm.Height += Salt
+
+                            ElseIf Where.Column.DataType = "Decimal" Then
+
+
+
+                                ConstructorDecimalBox = New DecimalBox
+                                ConstructorDecimalBox.Width = 100
+                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
+                                ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
+                                ConstructorDecimalBox.Tag = Where.Parameter2
+                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
+                                ControlTop += Salt
+                                ConstructorForm.Height += Salt
+
+
+                            ElseIf Where.Column.DataType = "Date" Then
+
+
+                                ConstructorDateBox = New DateBox
+                                ConstructorDateBox.Width = 100
+                                ConstructorDateBox.Location = New Point(15, ControlTop)
+                                ConstructorDateBox.Tag = Where.Parameter2
+                                ConstructorForm.Controls.Add(ConstructorDateBox)
+                                ControlTop += Salt
+                                ConstructorForm.Height += Salt
+                            End If
+
+                        Else 'se nao tiver constructor no no Parameter2
+
+
+                            Where.Parameter2.Name = "@VALUE" & ValueCounter
+                            ValueCounter += 1
+
+
+                        End If
+
+
+                    End If
+                Next Where
+
+
+
+
+                ConstructorButton = New Button
+                ConstructorButton.UseVisualStyleBackColor = True
+                ConstructorButton.Size = New Size(60, 30)
+
+                ConstructorButton.Location = New Point(15, ControlTop - 10)
+                ConstructorButton.Width = ConstructorForm.Width - 47
+                ConstructorButton.Text = "Filtrar"
+                ConstructorButton.DialogResult = DialogResult.OK
+                'ConstructorButton.Dock = DockStyle.Bottom
+                ConstructorForm.Controls.Add(ConstructorButton)
+                ConstructorForm.AcceptButton = ConstructorButton
+                If ConstructorForm.ShowDialog() = DialogResult.OK Then
+
+
+                    For Each c As Control In ConstructorForm.Controls
+                        If c.Tag IsNot Nothing AndAlso c.Tag.GetType Is GetType(Model.Parameter) Then
+                            If c.GetType Is GetType(ToggleButton) Then
+                                CType(c.Tag, Model.Parameter).Value = CBool(CType(c, ToggleButton).State)
+                            Else
+                                CType(c.Tag, Model.Parameter).Value = c.Text
+                            End If
+                            CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
+                            ValueCounter += 1
+                        End If
+                    Next c
+
+                    For Each Where In Wheres
+                        If Where.ComparsionOperator.Value = "BETWEEN" Then
+                            If Where.Column.DataType = "Integer" Or Where.Column.DataType = "Decimal" Then
+                                If Where.Parameter.Value = Nothing OrElse Where.Parameter.Value < -999999999 Then Where.Parameter.Value = -999999999
+                                If Where.Parameter2.Value = Nothing OrElse Where.Parameter2.Value > 999999999 Then Where.Parameter2.Value = 999999999
+
+                            End If
+
+                            If Where.Column.DataType = "Date" Then
+                                If Not IsDate(Where.Parameter.Value) OrElse Where.Parameter.Value < CDate("1900-01-01") Then Where.Parameter.Value = New Date(1900, 1, 1)
+                                If Not IsDate(Where.Parameter2.Value) Then Where.Parameter2.Value = Today
+                            End If
+
+
+                            Result.Parameters.Add(Where.Parameter)
+                            Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
+
+                            Result.Parameters.Add(Where.Parameter2)
+                            Query += " AND " & Where.Parameter2.Name
+
+                        Else
+
+                            'caso nao for beetween
+
+
+                        End If
+
+
+
+                        If Where IsNot Wheres.Last Then
+                            Query += " " & Where.LogicalOperator.Value & vbNewLine
+                        Else
+                            Query += " LIMIT " & FilterLimit & ";"
+                        End If
+                    Next Where
+
+
+                Else
+                    Return Nothing
+                End If
+            Else
+                Query += ";"
+
+            End If
+        Else
+            Query += vbNewLine & "WHERE" & vbNewLine & FreeWhereClause & ";"
+        End If
+
+
+
+        Result.CommandText = Query.ToString
+
+        Return Result
+    End Function
+    Private Sub BtnAdd_TextChanged(sender As Object, e As EventArgs) Handles TxtValue1.TextChanged, TxtValue2.TextChanged
+        If CbxOperador.SelectedValue = "BETWEEN" Then
+            If TxtValue1.Text = Nothing Or TxtValue2.Text = Nothing Then
+                BtnAdd.Enabled = False
+            Else
+                BtnAdd.Enabled = True
+            End If
+        Else
+            If TxtValue1.Text = Nothing Then
+                BtnAdd.Enabled = False
+            Else
+                BtnAdd.Enabled = True
+            End If
+        End If
+    End Sub
     Private Sub BtnAdd_Click(sender As Object, e As EventArgs) Handles BtnAdd.Click
         Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
         Dim Where As New Model.WhereClause
         Where.Column = CType(Dgv.SelectedRows(0).Cells(0).Value, Model.Column)
         Where.ComparsionOperator.Value = CbxOperador.SelectedValue
         Where.ComparsionOperator.Display = CbxOperador.Text
-
-        If FrmFilter.Controls.Contains(TxtValue1) Then
-            Where.Parameter.Value = TxtValue1.Text
-        ElseIf FrmFilter.Controls.Contains(DtxValue1) Then
-            Where.Parameter.Value = DtxValue1.Text
-        ElseIf FrmFilter.Controls.Contains(DbxValue1) Then
-            Where.Parameter.Value = DbxValue1.Text
-        ElseIf FrmFilter.Controls.Contains(TbtValue1) Then
-            Where.Parameter.Value = If(TbtValue1.State = ToggleButton.ToggleButtonStates.ON, "Sim", "Não")
-        End If
-
-        If CbxOperador.SelectedValue = "BETWEEN" Then
-
-            If FrmFilter.Controls.Contains(DtxValue2) Then
-                Where.Parameter2.Value = DtxValue2.Text
-            ElseIf FrmFilter.Controls.Contains(DbxValue2) Then
-                Where.Parameter2.Value = DbxValue2.Text
-            End If
-
-        End If
         Where.LogicalOperator.Display = If(RbAnd.Checked, "e", "ou")
         Where.LogicalOperator.Value = If(RbAnd.Checked, "AND", "OR")
-        If Where.Column.DataType = "Date" AndAlso Where.Parameter. 'quando deixa a data em branco ele leva so a mascara
-        Wheres.Add(Where) Then
 
-            LbxWheres.DataSource = Wheres.ToList
+
+        Where.Parameter.Value = TxtValue1.Text
+
+
+        If CbxOperador.SelectedValue = "BETWEEN" Then
+            Where.Parameter2.Value = TxtValue2.Text
+
+
+        End If
+
+
+
+        If Where.ComparsionOperator.Value = "BETWEEN" Then
+            If Where.Column.DataType = "Date" Then
+                If Where.Parameter.Value = " /  /" Then
+                    Where.Parameter.Value = New Date(1990, 1, 1)
+                End If
+                If Where.Parameter2.Value = " /  /" Then
+                    Where.Parameter2.Value = Today
+                End If
+            End If
+        End If
+
+
+
+        Wheres.Add(Where)
+
+        LbxWheres.DataSource = Wheres.ToList
     End Sub
 
 
@@ -56,12 +347,10 @@ Public Class FilterBuilder
     Private Sub CbxOperador_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CbxOperador.SelectedIndexChanged
         If CbxOperador.Text = "Entre" Then
             LblValue2.Visible = True
-            If FrmFilter.Controls.Contains(DtxValue2) Then
-                DtxValue2.Visible = True
+            If FrmFilter.Controls.Contains(TxtValue2) Then
+                TxtValue2.Visible = True
             End If
-            If FrmFilter.Controls.Contains(DbxValue2) Then
-                DbxValue2.Visible = True
-            End If
+
 
 
             RbAnd.Location = _AndLocation2
@@ -71,8 +360,8 @@ Public Class FilterBuilder
 
         Else
             LblValue2.Visible = False
-            If FrmFilter.Controls.Contains(DtxValue2) Then DtxValue2.Visible = False
-            If FrmFilter.Controls.Contains(DbxValue2) Then DbxValue2.Visible = False
+            If FrmFilter.Controls.Contains(TxtValue2) Then TxtValue2.Visible = False
+
 
             RbAnd.Location = _AndLocation
             RbOr.Location = _OrLocation
@@ -115,90 +404,25 @@ Public Class FilterBuilder
                 OperatorList.Add(New Model.Operator With {.Display = "Maior ou Igual", .Value = ">="})
             End If
 
-
-            If FrmFilter.Controls.Contains(TxtValue1) Then FrmFilter.Controls.Remove(TxtValue1)
-            If FrmFilter.Controls.Contains(DtxValue1) Then FrmFilter.Controls.Remove(DtxValue1)
-            If FrmFilter.Controls.Contains(DtxValue2) Then FrmFilter.Controls.Remove(DtxValue2)
-            If FrmFilter.Controls.Contains(DbxValue1) Then FrmFilter.Controls.Remove(DbxValue1)
-            If FrmFilter.Controls.Contains(DbxValue2) Then FrmFilter.Controls.Remove(DbxValue2)
-            If FrmFilter.Controls.Contains(TbtValue1) Then FrmFilter.Controls.Remove(TbtValue1)
-
-            If _DataType = "Text" Then
-
-
-                TxtValue1 = New TextBox
-                TxtValue1.Size = New Size(144, 23)
-                TxtValue1.Location = _ValueLocation
-                TxtValue1.Name = "TxtValue1"
-
-                FrmFilter.Controls.Add(TxtValue1)
-                TxtValue1.Select()
-            ElseIf _DataType = "Date" Then
-                DtxValue1 = New DateBox
-                DtxValue1.Size = New Size(144, 23)
-                DtxValue1.Location = _ValueLocation
-
-                DtxValue2 = New DateBox
-                DtxValue2.Size = New Size(144, 23)
-                DtxValue2.Location = _value2Location
-                DtxValue2.Visible = False
-
-                FrmFilter.Controls.AddRange({DtxValue1, DtxValue2})
-                DtxValue1.Select()
-
-            ElseIf _DataType = "Integer" Then
-
-                DbxValue1 = New DecimalBox
-                DbxValue1.Size = New Size(144, 23)
-                DbxValue1.Location = _ValueLocation
-                DbxValue1.DecimalPlaces = 0
-
-
-                DbxValue2 = New DecimalBox
-                DbxValue2.Size = New Size(144, 23)
-                DbxValue2.Location = _value2Location
-                DbxValue2.DecimalPlaces = 0
-                DbxValue2.Visible = False
-
-                FrmFilter.Controls.AddRange({DbxValue1, DbxValue2})
-                DbxValue2.Select()
-
-            ElseIf _DataType = "Decimal" Then
-
-                DbxValue1 = New DecimalBox
-                DbxValue1.Size = New Size(144, 23)
-                DbxValue1.Location = _ValueLocation
-                DbxValue1.DecimalPlaces = DecimalPlaces
-
-
-                DbxValue2 = New DecimalBox
-                DbxValue2.Size = New Size(144, 23)
-                DbxValue2.Location = _value2Location
-                DbxValue2.DecimalPlaces = DecimalPlaces
-                DbxValue2.Visible = False
-
-                FrmFilter.Controls.AddRange({DbxValue1, DbxValue2})
-                DbxValue2.Select()
-            ElseIf _DataType = "Boolean" Then
-                TbtValue1 = New ToggleButton
-                TbtValue1.Size = New Size(144, 23)
-                TbtValue1.OnStyle.Text = "Sim"
-                TbtValue1.OffStyle.Text = "Não"
-                TbtValue1.Location = _ValueLocation
-                TbtValue1.State = ToggleButton.ToggleButtonStates.ON
-
-                FrmFilter.Controls.Add(TbtValue1)
-                TbtValue1.Select()
-            End If
-
-
             CbxOperador.ValueMember = "Value"
             CbxOperador.DisplayMember = "Display"
             CbxOperador.DataSource = OperatorList
             CbxOperador.SelectedIndex = 0
 
+            TxtValue1.Text = Nothing
+            TxtValue2.Text = Nothing
 
-
+            If _DataType = "Text" Then
+                LblDescription.Text = "Tipo: Texto"
+            ElseIf _DataType = "Integer" Then
+                LblDescription.Text = "Tipo: Número Inteiro"
+            ElseIf _DataType = "Decimal" Then
+                LblDescription.Text = "Tipo: Número Decimal"
+            ElseIf _DataType = "Date" Then
+                LblDescription.Text = "Tipo: Data"
+            ElseIf _DataType = "Boolean" Then
+                LblDescription.Text = "Tipo: Sim/Não"
+            End If
 
 
 
@@ -307,299 +531,7 @@ Public Class FilterBuilder
     Private Query As String
     Private ValueCounter As Integer
 
-    Public Function GetResult() As Model.Result
-        Dim Result As New Model.Result
 
-        Dim Salt As Integer = 46
-        Dim LabelTop As Integer = 9
-        Dim ControlTop As Integer = 28
-        ValueCounter = 0
-
-        Query = "SELECT " & vbNewLine
-        For Each Column In MainTable.Columns
-            Query += vbTab & Column.Name & ", " & vbNewLine
-        Next Column
-        For Each Table In RelatedTables
-            For Each Column In Table.Columns
-                If Column.Visible Then
-                    Query += vbTab & Column.Name & ", " & vbNewLine
-                End If
-            Next Column
-        Next Table
-        Query = Strings.Left(Query, Query.Length - 1)
-        Query += "FROM "
-        Query += MainTable.Name & vbNewLine
-        RelatedTables.ForEach(Sub(x) Query += "JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID")
-        If FreeWhereClause = Nothing Then
-            If Wheres.Count > 0 Then
-                Query += vbNewLine & "WHERE" & vbNewLine
-                'se houver constructor entao apresenta o form para substituir o que esta nos values pelos valores reais.
-                If HasConstructor() Then
-                    ConstructorForm = New Form
-                    ConstructorForm.Size = New Size(400, 150 - Salt)
-                    ConstructorForm.MaximizeBox = False
-                    ConstructorForm.MinimizeBox = False
-                    ConstructorForm.FormBorderStyle = FormBorderStyle.FixedSingle
-                    ConstructorForm.ShowIcon = False
-                    ConstructorForm.ShowInTaskbar = False
-                    ConstructorForm.Font = New Font("Century Gothic", 9.75)
-                    ConstructorForm.BackColor = Color.White
-                    ConstructorForm.Text = "Parâmetros do Filtro - " & FilterName
-
-
-                    For Each Where In Wheres
-
-
-                        If IsConstructor(Where.Parameter.Value) Then
-                            ConstructorLabel = New Label
-                            ConstructorLabel.AutoSize = True
-                            ConstructorLabel.Text = Strings.Mid(Where.Parameter.Value, 2, Where.Parameter.Value.Length - 2)
-                            ConstructorLabel.Location = New Point(12, LabelTop)
-                            ConstructorForm.Controls.Add(ConstructorLabel)
-                            LabelTop += Salt
-
-                            If Where.Column.DataType = "Integer" Then
-
-                                ConstructorDecimalBox = New DecimalBox
-                                ConstructorDecimalBox.Width = 100
-                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
-                                ConstructorDecimalBox.DecimalPlaces = 0
-                                ConstructorDecimalBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                ControlTop += Salt
-                                ConstructorForm.Height += Salt
-
-                            ElseIf Where.Column.DataType = "Decimal" Then
-
-                                ConstructorDecimalBox = New DecimalBox
-                                ConstructorDecimalBox.Width = 100
-                                ConstructorDecimalBox.Location = New Point(15, ControlTop)
-                                ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
-                                ConstructorDecimalBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                ControlTop += Salt
-                                ConstructorForm.Height += Salt
-
-
-
-                            ElseIf Where.Column.DataType = "Date" Then
-
-                                ConstructorDateBox = New DateBox
-                                ConstructorDateBox.Width = 100
-                                ConstructorDateBox.Location = New Point(15, ControlTop)
-                                ConstructorDateBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorDateBox)
-                                ControlTop += Salt
-                                ConstructorForm.Height += Salt
-
-                            ElseIf Where.Column.DataType = "Text" Then
-                                ConstructorTextBox = New TextBox
-                                ConstructorTextBox.Width = ConstructorForm.Width - 47
-                                ConstructorTextBox.Location = New Point(15, ControlTop)
-                                ConstructorTextBox.Tag = Where.Parameter
-                                ConstructorForm.Controls.Add(ConstructorTextBox)
-                                ControlTop += Salt
-                                ConstructorForm.Height += Salt
-
-                            ElseIf Where.Column.DataType = "Boolean" Then
-                                ConstructorToggle = New ToggleButton
-                                ConstructorToggle.Width = 100
-                                ConstructorToggle.Location = New Point(15, ControlTop)
-                                ConstructorToggle.Tag = Where.Parameter
-                                ConstructorToggle.OnStyle.Text = "Sim"
-                                ConstructorToggle.OffStyle.Text = "Não"
-                                ConstructorToggle.State = ToggleButton.ToggleButtonStates.ON
-                                ConstructorForm.Controls.Add(ConstructorToggle)
-                                ControlTop += Salt
-                                ConstructorForm.Height += Salt
-
-
-                            End If
-
-                        Else 'se nao tiver constructor no no parameter
-
-
-                            Where.Parameter.Name = "@VALUE" & ValueCounter
-                            ValueCounter += 1
-
-
-
-                        End If
-
-
-
-
-                        If Where.ComparsionOperator.Value = "BETWEEN" Then
-
-                            If IsConstructor(Where.Parameter2.Value) Then
-
-
-
-                                ConstructorLabel = New Label
-                                ConstructorLabel.AutoSize = True
-                                ConstructorLabel.Text = Strings.Mid(Where.Parameter2.Value, 2, Where.Parameter2.Value.Length - 2)
-                                ConstructorLabel.Location = New Point(12, LabelTop)
-                                ConstructorForm.Controls.Add(ConstructorLabel)
-                                LabelTop += Salt
-
-
-
-
-                                If Where.Column.DataType = "Integer" Then
-
-
-                                    ConstructorDecimalBox = New DecimalBox
-                                    ConstructorDecimalBox.Width = 100
-                                    ConstructorDecimalBox.Location = New Point(15, ControlTop)
-                                    ConstructorDecimalBox.DecimalPlaces = 0
-                                    ConstructorDecimalBox.Tag = Where.Parameter2
-                                    ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                    ControlTop += Salt
-                                    ConstructorForm.Height += Salt
-
-                                ElseIf Where.Column.DataType = "Decimal" Then
-
-
-
-                                    ConstructorDecimalBox = New DecimalBox
-                                    ConstructorDecimalBox.Width = 100
-                                    ConstructorDecimalBox.Location = New Point(15, ControlTop)
-                                    ConstructorDecimalBox.DecimalPlaces = DecimalPlaces
-                                    ConstructorDecimalBox.Tag = Where.Parameter2
-                                    ConstructorForm.Controls.Add(ConstructorDecimalBox)
-                                    ControlTop += Salt
-                                    ConstructorForm.Height += Salt
-
-
-                                ElseIf Where.Column.DataType = "Date" Then
-
-
-                                    ConstructorDateBox = New DateBox
-                                    ConstructorDateBox.Width = 100
-                                    ConstructorDateBox.Location = New Point(15, ControlTop)
-                                    ConstructorDateBox.Tag = Where.Parameter2
-                                    ConstructorForm.Controls.Add(ConstructorDateBox)
-                                    ControlTop += Salt
-                                    ConstructorForm.Height += Salt
-                                End If
-
-                            Else 'se nao tiver constructor no no Parameter2
-
-
-                                Where.Parameter2.Name = "@VALUE" & ValueCounter
-                                ValueCounter += 1
-                            End If
-
-
-                        End If
-                    Next Where
-
-                    ConstructorButton = New Button
-                    ConstructorButton.UseVisualStyleBackColor = True
-                    ConstructorButton.Size = New Size(60, 30)
-
-                    ConstructorButton.Location = New Point(15, ControlTop - 10)
-                    ConstructorButton.Width = ConstructorForm.Width - 47
-                    ConstructorButton.Text = "Filtrar"
-                    ConstructorButton.DialogResult = DialogResult.OK
-                    'ConstructorButton.Dock = DockStyle.Bottom
-                    ConstructorForm.Controls.Add(ConstructorButton)
-                    ConstructorForm.AcceptButton = ConstructorButton
-                    If ConstructorForm.ShowDialog() = DialogResult.OK Then
-
-
-                        For Each c As Control In ConstructorForm.Controls
-
-                            If c.Tag IsNot Nothing AndAlso c.Tag.GetType Is GetType(Model.Parameter) Then
-
-                                If c.GetType = GetType(DateBox) Then
-                                    If c.Text = "  /  /" Then
-                                        CType(c.Tag, Model.Parameter).Value = "1900-01-01"
-                                    Else
-                                        CType(c.Tag, Model.Parameter).Value = CDate(c.Text).ToString("yyyy-MM-dd")
-                                    End If
-                                ElseIf c.GetType = GetType(DecimalBox) Then
-
-
-                                    CType(c.Tag, Model.Parameter).Value = CDec(c.Text)
-                                ElseIf c.GetType = GetType(ToggleButton) Then
-
-                                    CType(c.Tag, Model.Parameter).Value = If(CType(c, ToggleButton).State = ToggleButton.ToggleButtonStates.ON, True, False)
-                                Else
-                                    If c.Text = Nothing Then
-                                        For Each w In Wheres
-                                            If w.Parameter.Equals(c.Tag) Then
-                                                Wheres.Remove(w)
-                                                Exit For
-                                            End If
-                                        Next
-
-                                    End If
-                                    CType(c.Tag, Model.Parameter).Value = c.Text
-                                End If
-                                CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
-
-                                ValueCounter += 1
-
-                                'Result.Parameters.Add(c.Tag)
-                            End If
-
-
-                        Next c
-
-
-
-                        For Each Where In Wheres
-                            If Where.ComparsionOperator.Value = "BETWEEN" Then
-
-
-
-                                If Where.Parameter.Name.ToString <> Nothing And Where.Parameter.Value.ToString <> Nothing And Where.Parameter2.Name.ToString <> Nothing And Where.Parameter2.Value.ToString <> Nothing Then
-                                    Result.Parameters.Add(Where.Parameter)
-                                    Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
-
-                                    Result.Parameters.Add(Where.Parameter2)
-                                    Query += " AND " & Where.Parameter2.Name
-                                End If
-
-                            Else
-                                If Where.Parameter.Name.ToString <> Nothing And Where.Parameter.Value.ToString <> Nothing Then
-                                    Result.Parameters.Add(Where.Parameter)
-                                    Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
-                                End If
-
-                            End If
-
-
-
-
-                            If Where IsNot Wheres.Last Then
-                                Query += " " & Where.LogicalOperator.Value & vbNewLine
-                            Else
-                                Query += " LIMIT " & FilterLimit & ";"
-                            End If
-                        Next Where
-
-
-                    Else
-                        Return Nothing
-                    End If
-
-                End If
-            Else
-                Query += ";"
-
-            End If
-        Else
-            Query += vbNewLine & "WHERE" & vbNewLine & FreeWhereClause & ";"
-        End If
-
-
-
-        Result.CommandText = Query.ToString
-
-        Return Result
-    End Function
 
 
 
@@ -838,10 +770,18 @@ Public Class FilterBuilder
         LblValue.Text = "Valor"
         LblValue.Location = New Point(285, 91)
 
+        TxtValue1 = New TextBox
+        TxtValue1.Width = 144
+        TxtValue1.Location = _ValueLocation
+
         LblValue2 = New Label
         LblValue2.AutoSize = True
         LblValue2.Text = "Valor 2"
         LblValue2.Location = New Point(285, 138)
+
+        TxtValue2 = New TextBox
+        TxtValue2.Width = 144
+        TxtValue2.Location = _value2Location
 
 
         RbAnd = New RadioButton
@@ -861,7 +801,12 @@ Public Class FilterBuilder
         BtnAdd.Size = New Size(144, 30)
         BtnAdd.Location = _AddLocation2
         BtnAdd.UseVisualStyleBackColor = True
+        BtnAdd.Enabled = False
 
+        LblDescription = New Label
+        LblDescription.AutoSize = True
+        LblDescription.Location = _DescriptionLocation
+        LblDescription.ForeColor = Color.DimGray
 
         LbxWheres = New ListBox
         LbxWheres.Dock = DockStyle.Fill
@@ -898,7 +843,7 @@ Public Class FilterBuilder
         FrmFilter.MinimizeBox = False
         FrmFilter.MaximizeBox = False
         FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
-        FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador, LblValue, LblValue2, RbAnd, RbOr, BtnAdd, PnDgvWheres})
+        FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador, LblValue, TxtValue1, LblValue2, TxtValue2, RbAnd, RbOr, BtnAdd, LblDescription, PnDgvWheres})
 
 
     End Sub
@@ -910,16 +855,17 @@ Public Class FilterBuilder
     Private _OrLocation2 As New Point(327, 187)
     Private _AddLocation As New Point(288, 167)
     Private _AddLocation2 As New Point(288, 214)
+    Private _DescriptionLocation As New Point(288, 313)
+
+
+
     Friend WithEvents FrmFilter As Form
     Friend WithEvents TcTables As TabControl
     Friend WithEvents TpTable As TabPage
     Friend WithEvents DgvColumns As DataGridView
     Friend WithEvents TxtValue1 As TextBox
-    Friend WithEvents DbxValue1 As DecimalBox
-    Friend WithEvents DbxValue2 As DecimalBox
-    Friend WithEvents DtxValue1 As DateBox
-    Friend WithEvents DtxValue2 As DateBox
-    Friend WithEvents TbtValue1 As ToggleButton
+    Friend WithEvents TxtValue2 As TextBox
+
     Friend WithEvents RbAnd As RadioButton
     Friend WithEvents RbOr As RadioButton
     Friend WithEvents BtnAdd As Button
@@ -932,6 +878,8 @@ Public Class FilterBuilder
     Friend WithEvents TsBar As ToolStrip
     Friend WithEvents BtnDelete As ToolStripButton
     Friend WithEvents BtnClean As ToolStripButton
+    Friend WithEvents LblDescription As Label
+
 
     Friend WithEvents ConstructorForm As Form
     Friend WithEvents ConstructorDateBox As DateBox
