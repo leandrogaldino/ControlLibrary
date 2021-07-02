@@ -213,7 +213,7 @@ Public Class FilterBuilder
                     For Each c As Control In ConstructorForm.Controls
                         If c.Tag IsNot Nothing AndAlso c.Tag.GetType Is GetType(Model.Parameter) Then
                             If c.GetType Is GetType(ToggleButton) Then
-                                CType(c.Tag, Model.Parameter).Value = CBool(CType(c, ToggleButton).State)
+                                CType(c.Tag, Model.Parameter).Value = CInt(CType(c, ToggleButton).State)
                             Else
                                 CType(c.Tag, Model.Parameter).Value = c.Text
                             End If
@@ -223,30 +223,28 @@ Public Class FilterBuilder
                     Next c
 
                     For Each Where In Wheres
+
+                        If Where.Column.DataType = "Integer" Or Where.Column.DataType = "Decimal" Then
+                            If Where.Parameter.Value = Nothing OrElse Where.Parameter.Value < -999999999 Then Where.Parameter.Value = -999999999
+                        End If
+                        If Where.Column.DataType = "Date" Then
+                            If Not IsDate(Where.Parameter.Value) OrElse Where.Parameter.Value < CDate("1900-01-01") Then Where.Parameter.Value = New Date(1900, 1, 1)
+                        End If
+
+                        Result.Parameters.Add(Where.Parameter)
+                        Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
+
                         If Where.ComparsionOperator.Value = "BETWEEN" Then
                             If Where.Column.DataType = "Integer" Or Where.Column.DataType = "Decimal" Then
-                                If Where.Parameter.Value = Nothing OrElse Where.Parameter.Value < -999999999 Then Where.Parameter.Value = -999999999
                                 If Where.Parameter2.Value = Nothing OrElse Where.Parameter2.Value > 999999999 Then Where.Parameter2.Value = 999999999
-
                             End If
 
                             If Where.Column.DataType = "Date" Then
-                                If Not IsDate(Where.Parameter.Value) OrElse Where.Parameter.Value < CDate("1900-01-01") Then Where.Parameter.Value = New Date(1900, 1, 1)
                                 If Not IsDate(Where.Parameter2.Value) Then Where.Parameter2.Value = Today
                             End If
 
-
-                            Result.Parameters.Add(Where.Parameter)
-                            Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
-
                             Result.Parameters.Add(Where.Parameter2)
                             Query += " AND " & Where.Parameter2.Name
-
-                        Else
-
-                            'caso nao for beetween
-
-
                         End If
 
 
@@ -256,7 +254,8 @@ Public Class FilterBuilder
                         Else
                             Query += " LIMIT " & FilterLimit & ";"
                         End If
-                    Next Where
+                    Next
+
 
 
                 Else
