@@ -70,6 +70,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CrudObject.vb" />
     <Compile Include="DataGridViewNavigator.vb">
       <SubType>Component</SubType>
     </Compile>
