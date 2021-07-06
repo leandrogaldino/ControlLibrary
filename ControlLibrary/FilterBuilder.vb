@@ -1,13 +1,16 @@
 ﻿Imports System.ComponentModel
+Imports System.Configuration
+Imports System.Data.Common
 Imports System.Drawing
 Imports System.Reflection
 Imports System.Windows.Forms
 
 Public Class FilterBuilder
-    Private Sub BtnExecute_Click(sender As Object, e As EventArgs) Handles BtnExecute.Click
-        Me.GetResult()?
-    End Sub
+    Public Property FilterPath As String
 
+    Public Sub SaveFilter()
+        'salvar o filtro na pasta FilterPath
+    End Sub
     Public Function GetResult() As Model.Result
         Dim Result As New Model.Result
 
@@ -264,7 +267,7 @@ Public Class FilterBuilder
                     End If
                 End If
             Else
-                    Query += ";"
+                Query += ";"
 
             End If
         Else
@@ -345,20 +348,6 @@ Public Class FilterBuilder
         LbxWheres.DataSource = Wheres.ToList
     End Sub
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     Private Sub CbxOperador_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CbxOperador.SelectedIndexChanged
         If CbxOperador.Text = "Entre" Then
             LblValue2.Visible = True
@@ -393,7 +382,6 @@ Public Class FilterBuilder
     Private Sub DgvColumns_SelectionChanged(sender As Object, e As EventArgs)
         SelectionChanged(sender)
     End Sub
-
 
     Private Sub SelectionChanged(sender As Object)
         Dim Cell As DataGridViewCell
@@ -443,30 +431,6 @@ Public Class FilterBuilder
 
         End If
     End Sub
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     Private BooleanTypes As New List(Of String) From {
         "Boolean"
@@ -538,17 +502,8 @@ Public Class FilterBuilder
             Return False
         End If
     End Function
-    Private Function GetConstrucorCaption(ByVal s As String) As String
-        Return Strings.Mid(s, 2, s.Length - 2)
-    End Function
-
-
     Private Query As String
     Private ValueCounter As Integer
-
-
-
-
 
     Private Sub FillRelatedTable(ByVal obj As Object, ByVal DisplayColumns() As String)
         Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
@@ -699,10 +654,24 @@ Public Class FilterBuilder
         End Class
     End Class
 
-    Public Sub ShowDialog()
+    Public Function ShowDialog() As FilterDialogResult
         InitializeComponent()
-        FrmFilter.ShowDialog()
-    End Sub
+        Dim Dr As DialogResult = FrmFilter.ShowDialog
+        If Dr = DialogResult.OK Then
+            Return FilterDialogResult.Save
+
+        ElseIf Dr = DialogResult.Yes Then
+            Return FilterDialogResult.Execute
+        Else
+            Return FilterDialogResult.Cancel
+        End If
+    End Function
+
+    Public Enum FilterDialogResult
+        Save
+        Execute
+        Cancel
+    End Enum
 
     Private _DataType As String
     Private Sub InitializeComponent()
@@ -862,6 +831,8 @@ Public Class FilterBuilder
         BtnExecute.Location = New Point(222, 500)
         BtnExecute.UseVisualStyleBackColor = True
         BtnExecute.Enabled = False
+        BtnClose.DialogResult = DialogResult.Yes
+
 
         BtnSave = New Button
         BtnSave.Text = "Salvar"
@@ -869,6 +840,7 @@ Public Class FilterBuilder
         BtnSave.Location = New Point(116, 500)
         BtnSave.UseVisualStyleBackColor = True
         BtnSave.Enabled = False
+        BtnSave.DialogResult = DialogResult.OK
 
         FrmFilter = New Form
         FrmFilter.Font = New Font("Century Gothic", 9.75)

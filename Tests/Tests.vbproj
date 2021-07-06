@@ -171,6 +171,9 @@
     <None Include="packages.config" />
     <None Include="Resources\teste.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="modelo.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

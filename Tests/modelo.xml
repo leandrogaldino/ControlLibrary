@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Filter>
+	<Routine>nome da rotina</Routine>
+	<FilterName>nome do filtro</FilterName>
+	<FreeWhere>clausula inteira do Where</FreeWhere>
+	<Where> 
+		<Column>
+			<Name>nome da coluna</Name>
+			<Display>nome visivel da coluna</Display>
+		</Column>
+		<Operator>
+			<Name>nome do operador</Name>
+			<Display>nome visivel do operador</Display>
+		</Operator>
+		<Operator2>
+			<Name>nome do operador</Name>
+			<Display>nome visivel do operador</Display>
+		</Operator2>
+		<Value1>valor1</Value1>
+		<Value2>valor2</Value2>
+	</Where>
+</Filter>

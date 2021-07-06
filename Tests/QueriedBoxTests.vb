@@ -3,12 +3,13 @@ Public Class QueriedBoxTests
     Private Filter As FilterBuilder
     Private Person As New Person
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Dim Where As FilterBuilder.Model.WhereClause
+        'Dim Where As FilterBuilder.Model.WhereClause
         Filter = New FilterBuilder(Person)
         Filter.FilterName = "Filtro Personalizado"
 
+        If Filter.ShowDialog = FilterBuilder.FilterDialogResult.Execute Then
 
-        Filter.ShowDialog()
+        End If
 
 
 
@@ -51,10 +52,10 @@ Public Class QueriedBoxTests
         'Filter.FreeWhereClause = "Person.ID = 10"
 
 
-        Dim r = Filter.GetResult
-        If r IsNot Nothing Then
-            MsgBox(r.CommandText)
-        End If
+        'Dim r = Filter.GetResult
+        'If r IsNot Nothing Then
+        'MsgBox(r.CommandText)
+        'End If
 
         'Application.Exit()
     End Sub
