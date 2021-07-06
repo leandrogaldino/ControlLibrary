@@ -4,6 +4,9 @@ Imports System.Reflection
 Imports System.Windows.Forms
 
 Public Class FilterBuilder
+    Private Sub BtnExecute_Click(sender As Object, e As EventArgs) Handles BtnExecute.Click
+        Me.GetResult()?
+    End Sub
 
     Public Function GetResult() As Model.Result
         Dim Result As New Model.Result
@@ -193,76 +196,75 @@ Public Class FilterBuilder
                     End If
                 Next Where
 
+                If HasConstructor() Then
+                    ConstructorButton = New Button
+                    ConstructorButton.UseVisualStyleBackColor = True
+                    ConstructorButton.Size = New Size(60, 30)
+
+                    ConstructorButton.Location = New Point(15, ControlTop - 10)
+                    ConstructorButton.Width = ConstructorForm.Width - 47
+                    ConstructorButton.Text = "Filtrar"
+                    ConstructorButton.DialogResult = DialogResult.OK
+                    'ConstructorButton.Dock = DockStyle.Bottom
+                    ConstructorForm.Controls.Add(ConstructorButton)
+                    ConstructorForm.AcceptButton = ConstructorButton
+                    If ConstructorForm.ShowDialog() = DialogResult.OK Then
 
 
-
-                ConstructorButton = New Button
-                ConstructorButton.UseVisualStyleBackColor = True
-                ConstructorButton.Size = New Size(60, 30)
-
-                ConstructorButton.Location = New Point(15, ControlTop - 10)
-                ConstructorButton.Width = ConstructorForm.Width - 47
-                ConstructorButton.Text = "Filtrar"
-                ConstructorButton.DialogResult = DialogResult.OK
-                'ConstructorButton.Dock = DockStyle.Bottom
-                ConstructorForm.Controls.Add(ConstructorButton)
-                ConstructorForm.AcceptButton = ConstructorButton
-                If ConstructorForm.ShowDialog() = DialogResult.OK Then
-
-
-                    For Each c As Control In ConstructorForm.Controls
-                        If c.Tag IsNot Nothing AndAlso c.Tag.GetType Is GetType(Model.Parameter) Then
-                            If c.GetType Is GetType(ToggleButton) Then
-                                CType(c.Tag, Model.Parameter).Value = CInt(CType(c, ToggleButton).State)
-                            Else
-                                CType(c.Tag, Model.Parameter).Value = c.Text
+                        For Each c As Control In ConstructorForm.Controls
+                            If c.Tag IsNot Nothing AndAlso c.Tag.GetType Is GetType(Model.Parameter) Then
+                                If c.GetType Is GetType(ToggleButton) Then
+                                    CType(c.Tag, Model.Parameter).Value = CInt(CType(c, ToggleButton).State)
+                                Else
+                                    CType(c.Tag, Model.Parameter).Value = c.Text
+                                End If
+                                CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
+                                ValueCounter += 1
                             End If
-                            CType(c.Tag, Model.Parameter).Name = "@VALUE" & ValueCounter
-                            ValueCounter += 1
-                        End If
-                    Next c
+                        Next c
 
-                    For Each Where In Wheres
+                        For Each Where In Wheres
 
-                        If Where.Column.DataType = "Integer" Or Where.Column.DataType = "Decimal" Then
-                            If Where.Parameter.Value = Nothing OrElse Where.Parameter.Value < -999999999 Then Where.Parameter.Value = -999999999
-                        End If
-                        If Where.Column.DataType = "Date" Then
-                            If Not IsDate(Where.Parameter.Value) OrElse Where.Parameter.Value < CDate("1900-01-01") Then Where.Parameter.Value = New Date(1900, 1, 1)
-                        End If
-
-                        Result.Parameters.Add(Where.Parameter)
-                        Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
-
-                        If Where.ComparsionOperator.Value = "BETWEEN" Then
                             If Where.Column.DataType = "Integer" Or Where.Column.DataType = "Decimal" Then
-                                If Where.Parameter2.Value = Nothing OrElse Where.Parameter2.Value > 999999999 Then Where.Parameter2.Value = 999999999
+                                If Where.Parameter.Value = Nothing OrElse Where.Parameter.Value < -999999999 Then Where.Parameter.Value = -999999999
                             End If
-
                             If Where.Column.DataType = "Date" Then
-                                If Not IsDate(Where.Parameter2.Value) Then Where.Parameter2.Value = Today
+                                If Not IsDate(Where.Parameter.Value) OrElse Where.Parameter.Value < CDate("1900-01-01") Then Where.Parameter.Value = New Date(1900, 1, 1)
                             End If
 
-                            Result.Parameters.Add(Where.Parameter2)
-                            Query += " AND " & Where.Parameter2.Name
-                        End If
+                            Result.Parameters.Add(Where.Parameter)
+                            Query += vbTab & Where.Column.Name & " " & Where.ComparsionOperator.Value & " " & Where.Parameter.Name
+
+                            If Where.ComparsionOperator.Value = "BETWEEN" Then
+                                If Where.Column.DataType = "Integer" Or Where.Column.DataType = "Decimal" Then
+                                    If Where.Parameter2.Value = Nothing OrElse Where.Parameter2.Value > 999999999 Then Where.Parameter2.Value = 999999999
+                                End If
+
+                                If Where.Column.DataType = "Date" Then
+                                    If Not IsDate(Where.Parameter2.Value) Then Where.Parameter2.Value = Today
+                                End If
+
+                                Result.Parameters.Add(Where.Parameter2)
+                                Query += " AND " & Where.Parameter2.Name
+                            End If
 
 
 
-                        If Where IsNot Wheres.Last Then
-                            Query += " " & Where.LogicalOperator.Value & vbNewLine
-                        Else
-                            Query += " LIMIT " & FilterLimit & ";"
-                        End If
-                    Next
+                            If Where IsNot Wheres.Last Then
+                                Query += " " & Where.LogicalOperator.Value & vbNewLine
+                            Else
+                                Query += " LIMIT " & FilterLimit & ";"
+                            End If
+                        Next
 
 
 
-                Else
-                    Return Nothing
+                    Else
+                        Return Nothing
+                    End If
                 End If
             Else
-                Query += ";"
+                    Query += ";"
 
             End If
         Else
@@ -276,6 +278,14 @@ Public Class FilterBuilder
         Return Result
     End Function
     Private Sub BtnAdd_TextChanged(sender As Object, e As EventArgs) Handles TxtValue1.TextChanged, TxtValue2.TextChanged
+        Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
+        Dim Column As Model.Column
+        Column = CType(Dgv.SelectedRows(0).Cells(0).Value, Model.Column)
+
+
+
+
+
         If CbxOperador.SelectedValue = "BETWEEN" Then
             If TxtValue1.Text = Nothing Or TxtValue2.Text = Nothing Then
                 BtnAdd.Enabled = False
@@ -283,11 +293,24 @@ Public Class FilterBuilder
                 BtnAdd.Enabled = True
             End If
         Else
-            If TxtValue1.Text = Nothing Then
-                BtnAdd.Enabled = False
+
+            If Column.DataType = "Boolean" Then
+                If UCase(TxtValue1.Text) <> "SIM" And UCase(TxtValue1.Text) <> "NÃO" Then
+                    BtnAdd.Enabled = False
+                Else
+                    TxtValue1.Text = If(UCase(TxtValue1.Text) = "SIM", "Sim", "Não")
+                    TxtValue1.Select(3, 0)
+                    BtnAdd.Enabled = True
+                End If
             Else
-                BtnAdd.Enabled = True
+                If TxtValue1.Text = Nothing Then
+                    BtnAdd.Enabled = False
+                Else
+                    BtnAdd.Enabled = True
+                End If
             End If
+
+
         End If
     End Sub
     Private Sub BtnAdd_Click(sender As Object, e As EventArgs) Handles BtnAdd.Click
@@ -299,17 +322,11 @@ Public Class FilterBuilder
         Where.LogicalOperator.Display = If(RbAnd.Checked, "e", "ou")
         Where.LogicalOperator.Value = If(RbAnd.Checked, "AND", "OR")
 
-
         Where.Parameter.Value = TxtValue1.Text
-
 
         If CbxOperador.SelectedValue = "BETWEEN" Then
             Where.Parameter2.Value = TxtValue2.Text
-
-
         End If
-
-
 
         If Where.ComparsionOperator.Value = "BETWEEN" Then
             If Where.Column.DataType = "Date" Then
@@ -321,7 +338,6 @@ Public Class FilterBuilder
                 End If
             End If
         End If
-
 
 
         Wheres.Add(Where)
@@ -821,9 +837,11 @@ Public Class FilterBuilder
 
         TsBar = New ToolStrip
         TsBar.GripStyle = ToolStripGripStyle.Hidden
-        TsBar.BackColor = Color.Gainsboro
+        TsBar.BackColor = Color.DimGray
+        TsBar.ForeColor = Color.White
         TsBar.RenderMode = ToolStripRenderMode.System
         TsBar.Items.AddRange({BtnDelete, BtnClean})
+        TsBar.Renderer = New CustomToolstripRender
 
         PnDgvWheres = New Panel
         PnDgvWheres.BackColor = Color.White
@@ -831,19 +849,38 @@ Public Class FilterBuilder
         PnDgvWheres.Size = New Size(415, 152)
         PnDgvWheres.Controls.AddRange({LbxWheres, TsBar})
 
+        BtnClose = New Button
+        BtnClose.Text = "Fechar"
+        BtnClose.Size = New Size(100, 30)
+        BtnClose.Location = New Point(328, 500)
+        BtnClose.UseVisualStyleBackColor = True
+        BtnClose.DialogResult = DialogResult.Cancel
+
+        BtnExecute = New Button
+        BtnExecute.Text = "Executar"
+        BtnExecute.Size = New Size(100, 30)
+        BtnExecute.Location = New Point(222, 500)
+        BtnExecute.UseVisualStyleBackColor = True
+        BtnExecute.Enabled = False
+
+        BtnSave = New Button
+        BtnSave.Text = "Salvar"
+        BtnSave.Size = New Size(100, 30)
+        BtnSave.Location = New Point(116, 500)
+        BtnSave.UseVisualStyleBackColor = True
+        BtnSave.Enabled = False
 
         FrmFilter = New Form
         FrmFilter.Font = New Font("Century Gothic", 9.75)
         FrmFilter.Text = "Criador de Filtros"
-        FrmFilter.Size = New Size(460, 600)
+        FrmFilter.Size = New Size(460, 585)
         FrmFilter.BackColor = Color.White
         FrmFilter.ShowIcon = False
         FrmFilter.ShowInTaskbar = False
         FrmFilter.MinimizeBox = False
         FrmFilter.MaximizeBox = False
         FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
-        FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador, LblValue, TxtValue1, LblValue2, TxtValue2, RbAnd, RbOr, BtnAdd, LblDescription, PnDgvWheres})
-
+        FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador, LblValue, TxtValue1, LblValue2, TxtValue2, RbAnd, RbOr, BtnAdd, LblDescription, PnDgvWheres, BtnClose, BtnExecute, BtnSave})
 
     End Sub
     Private _ValueLocation As New Point(288, 111)
@@ -878,7 +915,9 @@ Public Class FilterBuilder
     Friend WithEvents BtnDelete As ToolStripButton
     Friend WithEvents BtnClean As ToolStripButton
     Friend WithEvents LblDescription As Label
-
+    Friend WithEvents BtnClose As Button
+    Friend WithEvents BtnExecute As Button
+    Friend WithEvents BtnSave As Button
 
     Friend WithEvents ConstructorForm As Form
     Friend WithEvents ConstructorDateBox As DateBox
@@ -887,4 +926,16 @@ Public Class FilterBuilder
     Friend WithEvents ConstructorLabel As Label
     Friend WithEvents ConstructorButton As Button
     Friend WithEvents ConstructorToggle As ToggleButton
+    Private Class CustomToolstripRender
+        Inherits ToolStripSystemRenderer
+
+        Public Sub New()
+        End Sub
+
+        Protected Overrides Sub OnRenderToolStripBorder(ByVal e As ToolStripRenderEventArgs)
+
+        End Sub
+
+    End Class
 End Class
+

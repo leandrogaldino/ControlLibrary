@@ -22,18 +22,7 @@ Partial Class QueriedBoxTests
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.DecimalBox1 = New ControlLibrary.DecimalBox()
         Me.SuspendLayout()
-        '
-        'DecimalBox1
-        '
-        Me.DecimalBox1.DecimalOnly = True
-        Me.DecimalBox1.DecimalPlaces = 2
-        Me.DecimalBox1.Location = New System.Drawing.Point(198, 133)
-        Me.DecimalBox1.Name = "DecimalBox1"
-        Me.DecimalBox1.Size = New System.Drawing.Size(100, 23)
-        Me.DecimalBox1.TabIndex = 0
-        Me.DecimalBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'QueriedBoxTests
         '
@@ -41,15 +30,11 @@ Partial Class QueriedBoxTests
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(692, 361)
-        Me.Controls.Add(Me.DecimalBox1)
         Me.Font = New System.Drawing.Font("Century Gothic", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "QueriedBoxTests"
         Me.Text = "QueriedBoxTexts"
         Me.ResumeLayout(False)
-        Me.PerformLayout()
 
     End Sub
-
-    Friend WithEvents DecimalBox1 As ControlLibrary.DecimalBox
 End Class

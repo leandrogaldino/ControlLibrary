@@ -3,12 +3,13 @@ Public Class QueriedBoxTests
     Private Filter As FilterBuilder
     Private Person As New Person
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        'Dim Where As FilterBuilder.Model.WhereClause
+        Dim Where As FilterBuilder.Model.WhereClause
         Filter = New FilterBuilder(Person)
         Filter.FilterName = "Filtro Personalizado"
 
 
         Filter.ShowDialog()
+
 
 
 
@@ -25,7 +26,7 @@ Public Class QueriedBoxTests
         'Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.Name")
         'Where.ComparsionOperator.Display = "Contem"
         'Where.ComparsionOperator.Value = "LIKE"
-        'Where.Parameter.Value = "[Nome]"
+        'Where.Parameter.Value = "[Digite um nome]"
         'Where.LogicalOperator.Display = "e"
         'Where.LogicalOperator.Value = "AND"
         'Filter.Wheres.Add(Where)
@@ -60,3 +61,4 @@ Public Class QueriedBoxTests
 
 
 End Class
+
