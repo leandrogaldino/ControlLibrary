@@ -1,16 +1,56 @@
 ﻿Imports ControlLibrary
-Public Class QueriedBoxTests
+Public Class Tests
     Private Filter As FilterBuilder
     Private Person As New Person
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        'Dim Where As FilterBuilder.Model.WhereClause
-        Filter = New FilterBuilder(Person)
-        Filter.FilterName = "Filtro Personalizado"
+
+        Dim doc As New Xml.XmlDocument
+        doc.Load("C:\Users\Leandro Galdino\Documents\GitHub\ControlLibrary\Tests\modelo.xml")
+
+
+
+
+
+
+
+        Dim Where As FilterBuilder.Model.WhereClause
+        Filter = New FilterBuilder(Activator.CreateInstance(Type.GetType(doc.SelectNodes("Filter/Object").Item(0).InnerText)))
+        Filter.FilterName = doc.SelectNodes("Filter/FilterName").Item(0).InnerText
+        Filter.FreeWhereClause = doc.SelectNodes("Filter/FreeWhere").Item(0).InnerText
+
+
+        For Each Element As Xml.XmlElement In doc.SelectNodes("Filter/Wheres/Where")
+
+            Where = New FilterBuilder.Model.WhereClause
+            Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = Element("Column").InnerText)
+
+            Where.ComparsionOperator.Value = Element("Operator").InnerText
+
+            Where.LogicalOperator.Value = Element("Operator2").InnerText
+            Where.Parameter.Value = Element("Value1").InnerText
+            Where.Parameter2.Value = Element("Value2").InnerText
+
+
+
+            Filter.Wheres.Add(Where)
+
+
+        Next
+
+        Filter.ShowDialog()
+        Dim r = Filter.GetResult
+
+        Dim c As New SQLite.SQLiteCommand
+        c.CommandText = r.CommandText
+        r.Parameters.ForEach(Sub(x) c.Parameters.AddWithValue(x.Name, x.Value))
+
+        Utility.DebugQuery(c)
+
+        Application.Exit()
 
         If Filter.ShowDialog = FilterBuilder.FilterDialogResult.Execute Then
 
         End If
-
 
 
 
@@ -60,6 +100,8 @@ Public Class QueriedBoxTests
         'Application.Exit()
     End Sub
 
-
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        MsgBox(Tests2.ShowDialog().ToString)
+    End Sub
 End Class
 

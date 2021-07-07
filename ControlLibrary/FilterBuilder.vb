@@ -464,7 +464,7 @@ Public Class FilterBuilder
     Public Property FilterName As String
     Public Property MainTable As New Model.Table
     Public Property RelatedTables As New List(Of Model.Table)
-    Public Property Wheres As New List(Of Model.WhereClause)
+    Public Property Wheres As New ObjectModel.Collection(Of Model.WhereClause)
     Public Property DecimalPlaces As Integer = 2
     Public Property FilterLimit As Long = 1000
     Public Property FreeWhereClause As String
@@ -854,6 +854,10 @@ Public Class FilterBuilder
         FrmFilter.FormBorderStyle = FormBorderStyle.FixedSingle
         FrmFilter.Controls.AddRange({TcTables, LblOperator, CbxOperador, LblValue, TxtValue1, LblValue2, TxtValue2, RbAnd, RbOr, BtnAdd, LblDescription, PnDgvWheres, BtnClose, BtnExecute, BtnSave})
 
+    End Sub
+
+    Private Sub FrmFilter_Load() Handles FrmFilter.Load
+        LbxWheres.DataSource = Wheres.ToList
     End Sub
     Private _ValueLocation As New Point(288, 111)
     Private _value2Location As New Point(288, 158)
