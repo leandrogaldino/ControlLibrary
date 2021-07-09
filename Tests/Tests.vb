@@ -1,19 +1,48 @@
 ﻿Imports ControlLibrary
+Imports System.Xml
 Public Class Tests
     Private Filter As FilterBuilder
     Private Person As New Person
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        'criar xml
+        'Dim Node As XmlNode
+        Dim doc As New XmlDocument
+        Dim Where As FilterBuilder.Model.WhereClause = FilterBuilder.Model.WhereClause
 
-        Dim doc As New Xml.XmlDocument
+        'Node = doc.CreateNode("NODE_TEXT", "name", "namespaceuri")
+        'doc.CreateElement("name")
+        'doc.Save("C:\Users\faturamento\Desktop")
+
+        Dim writer As New XmlTextWriter("teste.xml", Nothing)
+        writer.Formatting = Formatting.Indented
+        writer.WriteStartElement("Filter")
+        writer.WriteElementString("Object", "namespace + nome do objeto")
+        writer.WriteElementString("FilterName", "nome do filtro")
+        writer.WriteElementString("FreeWhere", "clausula where completa")
+        writer.WriteStartElement("Wheres")
+        writer.WriteElementString("Column", "nome do objeto + nome da coluna")
+        writer.WriteElementString("Operator", "nome do operador")
+        writer.WriteElementString("Operato2", "nome do operador2")
+        writer.WriteElementString("Value", "o primeiro valor")
+        writer.WriteElementString("Value2", "o segundo valor")
+        writer.WriteEndElement()
+        writer.WriteEndElement()
+        writer.Close()
+
+        Filter = New FilterBuilder(Type.GetType())
+        Dim rd As New XmlTextReader("teste.xml")
+        Do While rd.Read()
+            Select Case rd.Name
+                Case = "Object"
+
+            End Select
+        Loop
+
+        'Carregar o objeto com um xml
+        doc = New Xml.XmlDocument
         doc.Load("C:\Users\Leandro Galdino\Documents\GitHub\ControlLibrary\Tests\modelo.xml")
 
-
-
-
-
-
-
-        Dim Where As FilterBuilder.Model.WhereClause
+        Where = New FilterBuilder.Model.WhereClause
         Filter = New FilterBuilder(Activator.CreateInstance(Type.GetType(doc.SelectNodes("Filter/Object").Item(0).InnerText)))
         Filter.FilterName = doc.SelectNodes("Filter/FilterName").Item(0).InnerText
         Filter.FreeWhereClause = doc.SelectNodes("Filter/FreeWhere").Item(0).InnerText

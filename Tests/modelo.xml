@@ -14,7 +14,7 @@
 			<Column>Person.Name</Column>
 			<Operator>=</Operator>
 			<Operator2>AND</Operator2>
-			<Value1>[Digite um nome]</Value1>
+			<Value>[Digite um nome]</Value>
 			<Value2></Value2>
 		</Where>
 	</Wheres>
