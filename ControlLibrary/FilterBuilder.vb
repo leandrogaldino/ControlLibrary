@@ -4,13 +4,72 @@ Imports System.Data.Common
 Imports System.Drawing
 Imports System.Reflection
 Imports System.Windows.Forms
+Imports System.Xml
 
 Public Class FilterBuilder
-    Public Property FilterPath As String
+    'criar como um new, no outro new onde se passa um objeto, passar sem instanciar.
+    Public Sub Load(ByVal Path As String)
+        Dim doc As New XmlDocument
+        Dim Where As FilterBuilder.Model.WhereClause
+        doc = New Xml.XmlDocument
+        doc.Load("teste.xml")
+        Where = New FilterBuilder.Model.WhereClause
+        Dim n = doc.SelectNodes("Filter/Object").Item(0).InnerText
+        Filter = New FilterBuilder(Activator.CreateInstance(Type.GetType(n)))
+        FilterName = doc.SelectNodes("Filter/FilterName").Item(0).InnerText
+        FreeWhereClause = doc.SelectNodes("Filter/FreeWhere").Item(0).InnerText
 
-    Public Sub SaveFilter()
-        'salvar o filtro na pasta FilterPath
+
+        For Each Element As Xml.XmlElement In doc.SelectNodes("Filter/Wheres/Where")
+
+            Where = New FilterBuilder.Model.WhereClause
+            Where.Column = MainTable.Columns.Find(Function(x) x.Name = Element("Column").InnerText)
+
+            Where.ComparsionOperator.Value = Element("Operator").InnerText
+
+            Where.LogicalOperator.Value = Element("Operator2").InnerText
+            Where.Parameter.Value = Element("Value1").InnerText
+            Where.Parameter2.Value = Element("Value2").InnerText
+
+
+
+            Wheres.Add(Where)
+
+
+        Next
     End Sub
+
+    Public Sub Save(ByVal Path As String)
+
+        Using Writer As New XmlTextWriter(Path, Nothing)
+            Writer.Formatting = Formatting.Indented
+            Writer.WriteStartElement("Filter")
+            Writer.WriteElementString("Object", Assembly.GetEntryAssembly.GetName.Name & "." & Me.MainTable.Name)
+            Writer.WriteElementString("FilterName", FilterName)
+            Writer.WriteElementString("FreeWhere", FreeWhereClause)
+            Writer.WriteStartElement("Wheres")
+            For Each Where In Wheres
+                Writer.WriteStartElement("Where")
+
+
+                Writer.WriteElementString("Column", Where.Column.Name)
+                Writer.WriteElementString("Operator", Where.ComparsionOperator.Value)
+                Writer.WriteElementString("Operato2", Where.LogicalOperator.Value)
+                Writer.WriteElementString("Value", Where.Parameter.Value)
+                Writer.WriteElementString("Value2", Where.Parameter2.Value)
+
+                Writer.WriteEndElement()
+            Next Where
+
+            Writer.WriteEndElement()
+            Writer.WriteEndElement()
+            Writer.Close()
+        End Using
+
+
+    End Sub
+
+
     Public Function GetResult() As Model.Result
         Dim Result As New Model.Result
 
@@ -871,37 +930,37 @@ Public Class FilterBuilder
 
 
 
-    Friend WithEvents FrmFilter As Form
-    Friend WithEvents TcTables As TabControl
-    Friend WithEvents TpTable As TabPage
-    Friend WithEvents DgvColumns As DataGridView
-    Friend WithEvents TxtValue1 As TextBox
-    Friend WithEvents TxtValue2 As TextBox
+    Private WithEvents FrmFilter As Form
+    Private WithEvents TcTables As TabControl
+    Private WithEvents TpTable As TabPage
+    Private WithEvents DgvColumns As DataGridView
+    Private WithEvents TxtValue1 As TextBox
+    Private WithEvents TxtValue2 As TextBox
 
-    Friend WithEvents RbAnd As RadioButton
-    Friend WithEvents RbOr As RadioButton
-    Friend WithEvents BtnAdd As Button
-    Friend WithEvents LblOperator As Label
-    Friend WithEvents CbxOperador As ComboBox
-    Friend WithEvents LblValue As Label
-    Friend WithEvents LblValue2 As Label
-    Friend WithEvents LbxWheres As ListBox
-    Friend WithEvents PnDgvWheres As Panel
-    Friend WithEvents TsBar As ToolStrip
-    Friend WithEvents BtnDelete As ToolStripButton
-    Friend WithEvents BtnClean As ToolStripButton
-    Friend WithEvents LblDescription As Label
-    Friend WithEvents BtnClose As Button
-    Friend WithEvents BtnExecute As Button
-    Friend WithEvents BtnSave As Button
+    Private WithEvents RbAnd As RadioButton
+    Private WithEvents RbOr As RadioButton
+    Private WithEvents BtnAdd As Button
+    Private WithEvents LblOperator As Label
+    Private WithEvents CbxOperador As ComboBox
+    Private WithEvents LblValue As Label
+    Private WithEvents LblValue2 As Label
+    Private WithEvents LbxWheres As ListBox
+    Private WithEvents PnDgvWheres As Panel
+    Private WithEvents TsBar As ToolStrip
+    Private WithEvents BtnDelete As ToolStripButton
+    Private WithEvents BtnClean As ToolStripButton
+    Private WithEvents LblDescription As Label
+    Private WithEvents BtnClose As Button
+    Private WithEvents BtnExecute As Button
+    Private WithEvents BtnSave As Button
 
-    Friend WithEvents ConstructorForm As Form
-    Friend WithEvents ConstructorDateBox As DateBox
-    Friend WithEvents ConstructorDecimalBox As DecimalBox
-    Friend WithEvents ConstructorTextBox As TextBox
-    Friend WithEvents ConstructorLabel As Label
-    Friend WithEvents ConstructorButton As Button
-    Friend WithEvents ConstructorToggle As ToggleButton
+    Private WithEvents ConstructorForm As Form
+    Private WithEvents ConstructorDateBox As DateBox
+    Private WithEvents ConstructorDecimalBox As DecimalBox
+    Private WithEvents ConstructorTextBox As TextBox
+    Private WithEvents ConstructorLabel As Label
+    Private WithEvents ConstructorButton As Button
+    Private WithEvents ConstructorToggle As ToggleButton
     Private Class CustomToolstripRender
         Inherits ToolStripSystemRenderer
 
