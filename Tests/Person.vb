@@ -1,15 +1,10 @@
-﻿Imports System.ComponentModel
-Imports ControlLibrary.FilterBuilder.Model
-
-<DisplayName("Pessoa")>
+﻿<ControlLibrary.FilterBuilder.Model.Hide("Compressor")>
+<ControlLibrary.FilterBuilder.Model.Hide("Address.Street")>
 Public Class Person
     Public Property ID As Long
-    <DisplayName("Nome")>
-    Public Property Name As String
-    <DisplayName("Aniversário")>
-    Public Property Birth As Date
-    <DisplayName("Compressor")>
     Public Property Compressor As Compressor
-    Public Property Altura As Decimal
-    Public Property IsCustomer As Boolean
+    Public Property Lista As New List(Of Address)
+    Public Property p As New Person
+
+    precisa tratar como e feitas As colecoes customizadas derivadas de collection e usar o attributo acima.
 End Class

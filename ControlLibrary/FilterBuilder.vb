@@ -1,34 +1,127 @@
 ﻿Imports System.ComponentModel
-Imports System.Configuration
-Imports System.Data.Common
 Imports System.Drawing
 Imports System.Reflection
 Imports System.Windows.Forms
 Imports System.Xml
 
 Public Class FilterBuilder
-    'criar como um new, no outro new onde se passa um objeto, passar sem instanciar.
-    Public Sub Load(ByVal Path As String)
-        Dim doc As New XmlDocument
-        Dim Where As FilterBuilder.Model.WhereClause
-        doc = New Xml.XmlDocument
-        doc.Load("teste.xml")
-        Where = New FilterBuilder.Model.WhereClause
-        Dim n = doc.SelectNodes("Filter/Object").Item(0).InnerText
-        Filter = New FilterBuilder(Activator.CreateInstance(Type.GetType(n)))
-        FilterName = doc.SelectNodes("Filter/FilterName").Item(0).InnerText
-        FreeWhereClause = doc.SelectNodes("Filter/FreeWhere").Item(0).InnerText
+    'Private Sub FillRelatedTable(ByVal obj As Object, ByVal DisplayColumns() As String)
+    '    Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
+    '    Dim Table As Model.Table
+    '    Dim Columns() As String = {}
+    '    Dim IsVisible As Boolean
+    '    If Not IsCollection(obj) Then
+    '        Table = New Model.Table
+    '        Table.Name = obj.PropertyType.Name
+    '        Table.DisplayName = GetTableDisplayName(obj.PropertyType)
+    '        For Each p In obj.propertytype.GetProperties
+    '            If DataTypes.Contains(p.PropertyType.Name) Then
+    '                IsVisible = If(DisplayColumns.Count = 0, True, DisplayColumns.Contains(p.name))
+    '                Table.Columns.Add(New Model.Column With {.Name = Table.Name & "." & p.Name, .DisplayName = MainTable.DisplayName & "." & GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = IsVisible})
+    '            Else
+
+    '                If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
+    '                    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
+    '                End If
+    '                FillRelatedTable(p, Columns)
+    '            End If
+    '        Next p
+    '        RelatedTables.Add(Table)
+    '    End If
+    'End Sub
 
 
-        For Each Element As Xml.XmlElement In doc.SelectNodes("Filter/Wheres/Where")
 
-            Where = New FilterBuilder.Model.WhereClause
+
+    Private Sub Load(ObjType As Type, Optional IsRelatedTable As Boolean = False)
+        Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DecimalTypes).Concat(DateTypes).Concat(BooleanTypes)
+        Dim Table As New Model.Table
+        Dim Column As Model.Column
+
+        Table.Name = ObjType.Name
+        Table.DisplayName = GetTableDisplayName(ObjType.GetTypeInfo)
+        'Dim Columns() As String
+        For Each p As PropertyInfo In ObjType.GetProperties
+            If Not IsCollection(p) Then
+                If DataTypes.Contains(p.PropertyType.Name) Then
+                    Column = New Model.Column
+                    Column.Name = Table.Name & "." & p.Name
+                    Column.DisplayName = Table.DisplayName & "." & GetColumnDisplayName(p)
+                    Column.DataType = GetColumnType(p.PropertyType.Name)
+                    Column.Visible = True
+                    Table.Columns.Add(Column)
+                Else
+                    Load(p.PropertyType, True)
+                    'Columns = {}
+                    'If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
+                    '    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
+                    'End If
+                    'FillRelatedTable(p, Columns)
+                End If
+
+
+            Else
+
+
+                If Not DataTypes.Contains(p.PropertyType.GetGenericArguments.Single.Name) Then
+
+                    Load(p.PropertyType.GetGenericArguments.Single, True)
+                    'Columns = {}
+                    'If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
+                    '    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
+                    'End If
+                    'FillRelatedTable(p, Columns)
+                End If
+
+
+
+
+
+            End If
+
+
+        Next p
+        If Not IsRelatedTable Then
+            MainTable = Table
+        Else
+            If Not RelatedTables.Any(Function(x) x.Name = Table.Name) Then RelatedTables.Insert(0, Table)
+            'RelatedTables.Add(Table)
+        End If
+    End Sub
+
+    Public Shared Function GetCollectionItemType(ByVal collectionType As Type) As Type
+        Dim intIndexer = collectionType.GetMethod("get_Item", {GetType(Integer)})
+        Return If(intIndexer?.ReturnType, Nothing)
+    End Function
+
+    Public Sub New(Path As String)
+        Dim Document As New XmlDocument
+        Dim Where As Model.WhereClause
+        Dim ObjName As String
+        Dim ObjType As Type
+        Document = New XmlDocument
+        Document.Load(Path)
+        Where = New Model.WhereClause
+        ObjName = Document.SelectNodes("Filter/Object").Item(0).InnerText
+        ObjType = Type.GetType(String.Format("{0}, {1}", ObjName, ObjName.Split(".").ElementAt(0)))
+
+
+        Dim t As Type = Type.GetType("Tests.Person, Tests")
+
+        Load(ObjType)
+
+        FilterName = Document.SelectNodes("Filter/FilterName").Item(0).InnerText
+        FreeWhereClause = Document.SelectNodes("Filter/FreeWhere").Item(0).InnerText
+
+        For Each Element As XmlElement In Document.SelectNodes("Filter/Wheres/Where")
+
+            Where = New Model.WhereClause
             Where.Column = MainTable.Columns.Find(Function(x) x.Name = Element("Column").InnerText)
 
             Where.ComparsionOperator.Value = Element("Operator").InnerText
 
             Where.LogicalOperator.Value = Element("Operator2").InnerText
-            Where.Parameter.Value = Element("Value1").InnerText
+            Where.Parameter.Value = Element("Value").InnerText
             Where.Parameter2.Value = Element("Value2").InnerText
 
 
@@ -37,6 +130,9 @@ Public Class FilterBuilder
 
 
         Next
+    End Sub
+    Public Sub New(ObjType As Type)
+        Load(ObjType)
     End Sub
 
     Public Sub Save(ByVal Path As String)
@@ -54,7 +150,7 @@ Public Class FilterBuilder
 
                 Writer.WriteElementString("Column", Where.Column.Name)
                 Writer.WriteElementString("Operator", Where.ComparsionOperator.Value)
-                Writer.WriteElementString("Operato2", Where.LogicalOperator.Value)
+                Writer.WriteElementString("Operator2", Where.LogicalOperator.Value)
                 Writer.WriteElementString("Value", Where.Parameter.Value)
                 Writer.WriteElementString("Value2", Where.Parameter2.Value)
 
@@ -92,7 +188,9 @@ Public Class FilterBuilder
         Query = Strings.Left(Query, Query.Length - 1)
         Query += "FROM "
         Query += MainTable.Name & vbNewLine
-        RelatedTables.ForEach(Sub(x) Query += "JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID")
+        RelatedTables.ForEach(Sub(x) Query += "JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID" & vbNewLine)
+        If Strings.Right(Query, 2) = vbNewLine Then Query = Strings.Left(Query, Query.Length - 2)
+
         If FreeWhereClause = Nothing Then
             If Wheres.Count > 0 Then
                 Query += vbNewLine & "WHERE" & vbNewLine
@@ -528,23 +626,6 @@ Public Class FilterBuilder
     Public Property FilterLimit As Long = 1000
     Public Property FreeWhereClause As String
 
-    Public Sub New(ByVal Obj As Object)
-        Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DecimalTypes).Concat(DateTypes).Concat(BooleanTypes)
-        MainTable.Name = Obj.GetType.Name
-        MainTable.DisplayName = GetTableDisplayName(Obj.GetType.GetTypeInfo)
-        Dim Columns() As String
-        For Each p In Obj.GetType.GetProperties
-            If DataTypes.Contains(p.PropertyType.Name) Then
-                MainTable.Columns.Add(New Model.Column With {.Name = MainTable.Name & "." & p.Name, .DisplayName = MainTable.DisplayName & "." & GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = True})
-            Else
-                Columns = {}
-                If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
-                    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
-                End If
-                FillRelatedTable(p, Columns)
-            End If
-        Next p
-    End Sub
 
     Private Function HasConstructor() As Boolean
         For Each Where In Wheres
@@ -564,29 +645,7 @@ Public Class FilterBuilder
     Private Query As String
     Private ValueCounter As Integer
 
-    Private Sub FillRelatedTable(ByVal obj As Object, ByVal DisplayColumns() As String)
-        Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
-        Dim Table As Model.Table
-        Dim Columns() As String = {}
-        Dim IsVisible As Boolean
-        If Not IsCollection(obj) Then
-            Table = New Model.Table
-            Table.Name = obj.PropertyType.Name
-            Table.DisplayName = GetTableDisplayName(obj.PropertyType)
-            For Each p In obj.propertytype.GetProperties
-                If DataTypes.Contains(p.PropertyType.Name) Then
-                    IsVisible = If(DisplayColumns.Count = 0, True, DisplayColumns.Contains(p.name))
-                    Table.Columns.Add(New Model.Column With {.Name = Table.Name & "." & p.Name, .DisplayName = MainTable.DisplayName & "." & GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = IsVisible})
-                Else
-                    If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
-                        Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
-                    End If
-                    FillRelatedTable(p, Columns)
-                End If
-            Next p
-            RelatedTables.Add(Table)
-        End If
-    End Sub
+
 
     Private Function GetColumnType(ByVal SistemType As String) As String
         If IntegerTypes.Contains(SistemType) Then
@@ -689,17 +748,28 @@ Public Class FilterBuilder
                 Return DisplayName.Split(".").ElementAt(1)
             End Function
         End Class
-        Public Class DisplayColumn
+
+        <AttributeUsage(AttributeTargets.All, AllowMultiple:=True)>
+        Public Class Hide
             Inherits Attribute
-            Public Property ColumnName As String()
-            Public Sub New(ByVal ColumnName() As String)
+            Public Property ColumnName As String
+            Public Sub New(ColumnName As String)
                 Me.ColumnName = ColumnName
             End Sub
-            Public Sub New(ByVal ColumnName As String)
-                Dim C() As String = {ColumnName}
-                Me.ColumnName = C
-            End Sub
+
         End Class
+
+        'Public Class DisplayColumn
+        '    Inherits Attribute
+        '    Public Property ColumnName As String()
+        '    Public Sub New(ByVal ColumnName() As String)
+        '        Me.ColumnName = ColumnName
+        '    End Sub
+        '    Public Sub New(ByVal ColumnName As String)
+        '        Dim C() As String = {ColumnName}
+        '        Me.ColumnName = C
+        '    End Sub
+        'End Class
 
         Public Class Result
             Public Property CommandText As String

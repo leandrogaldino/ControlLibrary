@@ -1,8 +1,4 @@
-﻿Imports System.ComponentModel
-
-Public Class Compressor
-
-    Public Property ID As Long
+﻿Public Class Compressor
     Public Property Model As String
-    Public Property Serial As String
+    Public Property Adress As New Address
 End Class
