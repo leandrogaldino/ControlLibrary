@@ -5,95 +5,75 @@ Imports System.Windows.Forms
 Imports System.Xml
 
 Public Class FilterBuilder
-    'Private Sub FillRelatedTable(ByVal obj As Object, ByVal DisplayColumns() As String)
-    '    Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DateTypes).Concat(BooleanTypes)
-    '    Dim Table As Model.Table
-    '    Dim Columns() As String = {}
-    '    Dim IsVisible As Boolean
-    '    If Not IsCollection(obj) Then
-    '        Table = New Model.Table
-    '        Table.Name = obj.PropertyType.Name
-    '        Table.DisplayName = GetTableDisplayName(obj.PropertyType)
-    '        For Each p In obj.propertytype.GetProperties
-    '            If DataTypes.Contains(p.PropertyType.Name) Then
-    '                IsVisible = If(DisplayColumns.Count = 0, True, DisplayColumns.Contains(p.name))
-    '                Table.Columns.Add(New Model.Column With {.Name = Table.Name & "." & p.Name, .DisplayName = MainTable.DisplayName & "." & GetColumnDisplayName(p), .DataType = GetColumnType(p.PropertyType.Name), .Visible = IsVisible})
-    '            Else
-
-    '                If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
-    '                    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
-    '                End If
-    '                FillRelatedTable(p, Columns)
-    '            End If
-    '        Next p
-    '        RelatedTables.Add(Table)
-    '    End If
-    'End Sub
+    Private Function GetFieldAliasList(ObjTypeInfo As TypeInfo) As List(Of String)
+        Dim List As New List(Of String)
+        For Each attr In ObjTypeInfo.GetCustomAttributes
+            If attr.GetType.Equals(GetType(Model.FieldAlias)) Then
+                List.Add(CType(attr, Model.FieldAlias).Model.Replace(" ", Nothing))
+            End If
+        Next
+        Return List
+    End Function
+    Private Function GetHideFieldList(ObjTypeInfo As TypeInfo) As List(Of String)
+        Dim List As New List(Of String)
+        For Each attr In ObjTypeInfo.GetCustomAttributes
+            If attr.GetType.Equals(GetType(Model.HideField)) Then
+                List.Add(CType(attr, Model.HideField).Model.Replace(" ", Nothing))
+            End If
+        Next
+        Return List
+    End Function
 
 
+    Private Function GetFieldAlias(ByVal pi As PropertyInfo) As String
+        Dim DisplayName As String = String.Empty
+        If pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute).Count > 0 Then
+            DisplayName = pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute)().FirstOrDefault().DisplayName
+        Else
+            DisplayName = pi.Name
+        End If
+        Return DisplayName
+    End Function
+    Private Function GetTableAlias(ByVal pi As TypeInfo) As String
+        Dim DisplayName As String = String.Empty
+        If pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute).Count > 0 Then
+            DisplayName = pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute)().FirstOrDefault().DisplayName
+        Else
+            DisplayName = pi.Name
+        End If
+        Return DisplayName
+    End Function
 
 
-    Private Sub Load(ObjType As Type, Optional IsRelatedTable As Boolean = False)
+    Private Sub Load(ObjType As Type, Optional IsRelatedTable As Boolean = False, Optional [Alias] As String = Nothing, Optional Relation As String = Nothing, Optional IsMany As Boolean = False)
         Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DecimalTypes).Concat(DateTypes).Concat(BooleanTypes)
         Dim Table As New Model.Table
         Dim Column As Model.Column
-
         Table.Name = ObjType.Name
-        Table.DisplayName = GetTableDisplayName(ObjType.GetTypeInfo)
-        'Dim Columns() As String
+        Table.Relation = If(Relation = Nothing, ObjType.Name, Relation)
+        Table.Alias = If([Alias] = Nothing, ObjType.Name, [Alias])
+        Table.IsMany = If(IsMany = Nothing, False, IsMany)
+        Table.DisplayName = GetTableAlias(ObjType.GetTypeInfo)
         For Each p As PropertyInfo In ObjType.GetProperties
             If Not IsCollection(p) Then
                 If DataTypes.Contains(p.PropertyType.Name) Then
-                    Column = New Model.Column
-                    Column.Name = Table.Name & "." & p.Name
-                    Column.DisplayName = Table.DisplayName & "." & GetColumnDisplayName(p)
-                    Column.DataType = GetColumnType(p.PropertyType.Name)
-                    Column.Visible = True
+                    Column = New Model.Column With {
+                        .Name = Table.Alias & "." & p.Name,
+                        .DisplayName = Table.DisplayName & "." & GetFieldAlias(p),
+                        .DataType = GetColumnType(p.PropertyType.Name)
+                    }
                     Table.Columns.Add(Column)
                 Else
-                    Load(p.PropertyType, True)
-                    'Columns = {}
-                    'If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
-                    '    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
-                    'End If
-                    'FillRelatedTable(p, Columns)
+                    Load(p.PropertyType, True, p.Name, Table.Alias)
                 End If
-
-
-            Else
-
-
-                If Not DataTypes.Contains(p.PropertyType.GetGenericArguments.Single.Name) Then
-
-                    Load(p.PropertyType.GetGenericArguments.Single, True)
-                    'Columns = {}
-                    'If p.GetCustomAttributes.Any(Function(x) x.GetType.Equals(GetType(Model.DisplayColumn))) Then
-                    '    Columns = TryCast(p.GetCustomAttributes(GetType(Model.DisplayColumn), True)(0), Model.DisplayColumn).ColumnName
-                    'End If
-                    'FillRelatedTable(p, Columns)
-                End If
-
-
-
-
-
             End If
-
-
         Next p
         If Not IsRelatedTable Then
             MainTable = Table
         Else
-            If Not RelatedTables.Any(Function(x) x.Name = Table.Name) Then RelatedTables.Insert(0, Table)
-            'RelatedTables.Add(Table)
+            RelatedTables.Insert(0, Table)
         End If
     End Sub
-
-    Public Shared Function GetCollectionItemType(ByVal collectionType As Type) As Type
-        Dim intIndexer = collectionType.GetMethod("get_Item", {GetType(Integer)})
-        Return If(intIndexer?.ReturnType, Nothing)
-    End Function
-
     Public Sub New(Path As String)
         Dim Document As New XmlDocument
         Dim Where As Model.WhereClause
@@ -105,8 +85,6 @@ Public Class FilterBuilder
         ObjName = Document.SelectNodes("Filter/Object").Item(0).InnerText
         ObjType = Type.GetType(String.Format("{0}, {1}", ObjName, ObjName.Split(".").ElementAt(0)))
 
-
-        Dim t As Type = Type.GetType("Tests.Person, Tests")
 
         Load(ObjType)
 
@@ -166,29 +144,60 @@ Public Class FilterBuilder
     End Sub
 
 
+
     Public Function GetResult() As Model.Result
         Dim Result As New Model.Result
-
         Dim Salt As Integer = 46
         Dim LabelTop As Integer = 9
         Dim ControlTop As Integer = 28
+
+
+
         ValueCounter = 0
 
         Query = "SELECT " & vbNewLine
+
+
+
         For Each Column In MainTable.Columns
-            Query += vbTab & Column.Name & ", " & vbNewLine
+            Query += String.Format("{0}[{1}].[{2}] AS [{3}],{4}", vbTab, Column.Name.Split(".").ElementAt(0), Column.Name.Split(".").ElementAt(1), Column.DisplayName.Split(".").ElementAt(1), vbNewLine)
         Next Column
+
+
+
         For Each Table In RelatedTables
+
+
             For Each Column In Table.Columns
-                If Column.Visible Then
-                    Query += vbTab & Column.Name & ", " & vbNewLine
-                End If
+
+
+
+
+
+                Query += String.Format("{0}[{1}].[{2}] AS [{3}],{4}", vbTab, Column.Name.Split(".").ElementAt(0), Column.Name.Split(".").ElementAt(1), Column.DisplayName.Split(".").ElementAt(1), vbNewLine)
+
+
+
+
             Next Column
         Next Table
-        Query = Strings.Left(Query, Query.Length - 1)
-        Query += "FROM "
-        Query += MainTable.Name & vbNewLine
-        RelatedTables.ForEach(Sub(x) Query += "JOIN " & x.Name & " ON " & x.Name & ".ID = " & MainTable.Name & "." & x.Name & "ID" & vbNewLine)
+        Query = Strings.Left(Query, Query.Length - 3)
+        Query += String.Format("{0}FROM [{1}]{2}", vbNewLine, MainTable.Name, vbNewLine)
+
+
+
+
+        For Each Table In RelatedTables
+
+            If Not Table.IsMany Then
+                Query += String.Format("JOIN [{0}] AS [{1}] ON [{2}].[ID] = [{3}].[{4}ID]{5}", Table.Name, Table.Alias, Table.Alias, Table.Relation, Table.Name, vbNewLine)
+            Else
+                Query += String.Format("JOIN [{0}] AS [{1}] ON [{2}].[{3}ID] = [{4}].[ID]{5}", Table.Name, Table.Alias, Table.Alias, Table.Relation, Table.Relation, vbNewLine)
+            End If
+
+        Next
+
+
         If Strings.Right(Query, 2) = vbNewLine Then Query = Strings.Left(Query, Query.Length - 2)
 
         If FreeWhereClause = Nothing Then
@@ -662,24 +671,7 @@ Public Class FilterBuilder
             Return Nothing
         End If
     End Function
-    Private Function GetColumnDisplayName(ByVal pi As PropertyInfo) As String
-        Dim DisplayName As String = String.Empty
-        If pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute).Count > 0 Then
-            DisplayName = pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute)().FirstOrDefault().DisplayName
-        Else
-            DisplayName = pi.Name
-        End If
-        Return DisplayName
-    End Function
-    Private Function GetTableDisplayName(ByVal pi As TypeInfo) As String
-        Dim DisplayName As String = String.Empty
-        If pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute).Count > 0 Then
-            DisplayName = pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute)().FirstOrDefault().DisplayName
-        Else
-            DisplayName = pi.Name
-        End If
-        Return DisplayName
-    End Function
+
     Private Function IsCollection(ByVal pi As PropertyInfo) As Boolean
         If pi.PropertyType.Name = "String" Then
             Return False
@@ -733,7 +725,10 @@ Public Class FilterBuilder
         End Class
         Public Class Table
             Public Property Name As String
+            Public Property [Alias] As String
             Public Property DisplayName As String
+            Public Property Relation As String
+            Public Property IsMany As Boolean
             Public Property Columns As New List(Of Column)
             Public Overrides Function ToString() As String
                 Return DisplayName
@@ -743,33 +738,36 @@ Public Class FilterBuilder
             Public Property Name As String
             Public Property DisplayName As String
             Public Property DataType As String
-            Public Property Visible As Boolean
             Public Overrides Function ToString() As String
                 Return DisplayName.Split(".").ElementAt(1)
             End Function
         End Class
-
-        <AttributeUsage(AttributeTargets.All, AllowMultiple:=True)>
-        Public Class Hide
+        <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
+        Public Class TableAlias
             Inherits Attribute
-            Public Property ColumnName As String
-            Public Sub New(ColumnName As String)
-                Me.ColumnName = ColumnName
+            Public Property Name As String
+            Public Sub New(Name As String)
+                Me.Name = Name
             End Sub
-
+        End Class
+        <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
+        Public Class FieldAlias
+            Inherits Attribute
+            Public Property Model As String
+            Public Sub New(Model As String)
+                Me.Model = Model
+            End Sub
+        End Class
+        <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
+        Public Class HideField
+            Inherits Attribute
+            Public Property Model As String
+            Public Sub New(Model As String)
+                Me.Model = Model
+            End Sub
         End Class
 
-        'Public Class DisplayColumn
-        '    Inherits Attribute
-        '    Public Property ColumnName As String()
-        '    Public Sub New(ByVal ColumnName() As String)
-        '        Me.ColumnName = ColumnName
-        '    End Sub
-        '    Public Sub New(ByVal ColumnName As String)
-        '        Dim C() As String = {ColumnName}
-        '        Me.ColumnName = C
-        '    End Sub
-        'End Class
+
 
         Public Class Result
             Public Property CommandText As String

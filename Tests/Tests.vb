@@ -7,21 +7,22 @@ Public Class Tests
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
 
-        Filter = New FilterBuilder(Person.GetType)
+
+        Filter = New FilterBuilder(GetType(Order))
 
 
 
         Where = New FilterBuilder.Model.WhereClause
-        'Where.Column = Filter.RelatedTables(1).Columns(0)
-        Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.ID")
+        Where.Column = Filter.RelatedTables(0).Columns(0)
+        'Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.ID")
         Where.ComparsionOperator.Display = "Igual"
         Where.ComparsionOperator.Value = "="
         Where.LogicalOperator.Display = "e"
         Where.LogicalOperator.Value = "AND"
-        Where.Parameter.Value = "[Rua]"
+        Where.Parameter.Value = "[ID]"
         Filter.Wheres.Add(Where)
-        'Dim r = Filter.GetResult
-        'MsgBox(r.CommandText)
+        Dim r = Filter.GetResult
+        Debug.Print(r.CommandText)
         Filter.ShowDialog()
 
 

@@ -98,8 +98,6 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Address.vb" />
-    <Compile Include="Compressor.vb" />
     <Compile Include="FrmCodeCompilerTest.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -113,7 +111,11 @@
     <Compile Include="FrmImagePickerTest.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Item.vb" />
+    <Compile Include="Models\Address.vb" />
+    <Compile Include="Models\Item.vb" />
+    <Compile Include="Models\Order.vb" />
+    <Compile Include="Models\OrderItem.vb" />
+    <Compile Include="Models\Person.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -130,7 +132,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Person.vb" />
     <Compile Include="Tests.Designer.vb">
       <DependentUpon>Tests.vb</DependentUpon>
     </Compile>
