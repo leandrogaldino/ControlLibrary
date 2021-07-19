@@ -4,8 +4,23 @@ Public Class Tests
     Private Filter As FilterBuilder
     Private Person As New Person
     Private Where As FilterBuilder.Model.WhereClause
-    Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
+
+    Public Class Dates
+        Public Property InitialDate As Date = Today.AddDays(-30)
+        Public Property FinalDate As Date = Today
+
+    End Class
+    Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Dim a As New Dates
+
+
+        PropertyGrid1.SelectedObject = New Order
+
+
+
+
+        Exit Sub
 
 
         Filter = New FilterBuilder(GetType(Order))

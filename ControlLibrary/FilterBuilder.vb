@@ -5,26 +5,6 @@ Imports System.Windows.Forms
 Imports System.Xml
 
 Public Class FilterBuilder
-    Private Function GetFieldAliasList(ObjTypeInfo As TypeInfo) As List(Of String)
-        Dim List As New List(Of String)
-        For Each attr In ObjTypeInfo.GetCustomAttributes
-            If attr.GetType.Equals(GetType(Model.FieldAlias)) Then
-                List.Add(CType(attr, Model.FieldAlias).Model.Replace(" ", Nothing))
-            End If
-        Next
-        Return List
-    End Function
-    Private Function GetHideFieldList(ObjTypeInfo As TypeInfo) As List(Of String)
-        Dim List As New List(Of String)
-        For Each attr In ObjTypeInfo.GetCustomAttributes
-            If attr.GetType.Equals(GetType(Model.HideField)) Then
-                List.Add(CType(attr, Model.HideField).Model.Replace(" ", Nothing))
-            End If
-        Next
-        Return List
-    End Function
-
-
     Private Function GetFieldAlias(ByVal pi As PropertyInfo) As String
         Dim DisplayName As String = String.Empty
         If pi.GetCustomAttributes(GetType(DisplayNameAttribute), True).Cast(Of DisplayNameAttribute).Count > 0 Then
@@ -45,26 +25,24 @@ Public Class FilterBuilder
     End Function
 
 
-    Private Sub Load(ObjType As Type, Optional IsRelatedTable As Boolean = False, Optional [Alias] As String = Nothing, Optional Relation As String = Nothing, Optional IsMany As Boolean = False)
+    Private Sub Load(ObjType As Type, Optional IsRelatedTable As Boolean = False, Optional Relation As String = Nothing)
         Dim DataTypes = IntegerTypes.Concat(TextTypes).Concat(DecimalTypes).Concat(DateTypes).Concat(BooleanTypes)
         Dim Table As New Model.Table
         Dim Column As Model.Column
-        Table.Name = ObjType.Name
+        Table.TableName = ObjType.Name
         Table.Relation = If(Relation = Nothing, ObjType.Name, Relation)
-        Table.Alias = If([Alias] = Nothing, ObjType.Name, [Alias])
-        Table.IsMany = If(IsMany = Nothing, False, IsMany)
-        Table.DisplayName = GetTableAlias(ObjType.GetTypeInfo)
+        Table.TableAlias = GetTableAlias(ObjType.GetTypeInfo)
         For Each p As PropertyInfo In ObjType.GetProperties
             If Not IsCollection(p) Then
                 If DataTypes.Contains(p.PropertyType.Name) Then
                     Column = New Model.Column With {
-                        .Name = Table.Alias & "." & p.Name,
-                        .DisplayName = Table.DisplayName & "." & GetFieldAlias(p),
+                        .Name = Table.TableAlias & "." & p.Name,
+                        .DisplayName = Table.TableAlias & "." & GetFieldAlias(p),
                         .DataType = GetColumnType(p.PropertyType.Name)
                     }
                     Table.Columns.Add(Column)
                 Else
-                    Load(p.PropertyType, True, p.Name, Table.Alias)
+                    Load(p.PropertyType, True, p.Name)
                 End If
             End If
         Next p
@@ -118,7 +96,7 @@ Public Class FilterBuilder
         Using Writer As New XmlTextWriter(Path, Nothing)
             Writer.Formatting = Formatting.Indented
             Writer.WriteStartElement("Filter")
-            Writer.WriteElementString("Object", Assembly.GetEntryAssembly.GetName.Name & "." & Me.MainTable.Name)
+            Writer.WriteElementString("Object", Assembly.GetEntryAssembly.GetName.Name & "." & Me.MainTable.TableName)
             Writer.WriteElementString("FilterName", FilterName)
             Writer.WriteElementString("FreeWhere", FreeWhereClause)
             Writer.WriteStartElement("Wheres")
@@ -182,18 +160,16 @@ Public Class FilterBuilder
             Next Column
         Next Table
         Query = Strings.Left(Query, Query.Length - 3)
-        Query += String.Format("{0}FROM [{1}]{2}", vbNewLine, MainTable.Name, vbNewLine)
+        Query += String.Format("{0}FROM [{1}]{2}", vbNewLine, MainTable.TableName, vbNewLine)
 
 
 
 
         For Each Table In RelatedTables
 
-            If Not Table.IsMany Then
-                Query += String.Format("JOIN [{0}] AS [{1}] ON [{2}].[ID] = [{3}].[{4}ID]{5}", Table.Name, Table.Alias, Table.Alias, Table.Relation, Table.Name, vbNewLine)
-            Else
-                Query += String.Format("JOIN [{0}] AS [{1}] ON [{2}].[{3}ID] = [{4}].[ID]{5}", Table.Name, Table.Alias, Table.Alias, Table.Relation, Table.Relation, vbNewLine)
-            End If
+
+            Query += String.Format("JOIN [{0}] AS [{1}] ON [{2}].[ID] = [{3}].[{4}ID]{5}", Table.TableName, Table.TableAlias, Table.TableAlias, Table.Relation, Table.TableName, vbNewLine)
+
 
         Next
 
@@ -724,14 +700,12 @@ Public Class FilterBuilder
             End Function
         End Class
         Public Class Table
-            Public Property Name As String
-            Public Property [Alias] As String
-            Public Property DisplayName As String
+            Public Property TableName As String
+            Public Property TableAlias As String
             Public Property Relation As String
-            Public Property IsMany As Boolean
             Public Property Columns As New List(Of Column)
             Public Overrides Function ToString() As String
-                Return DisplayName
+                Return TableAlias
             End Function
         End Class
         Public Class Column
@@ -742,30 +716,30 @@ Public Class FilterBuilder
                 Return DisplayName.Split(".").ElementAt(1)
             End Function
         End Class
-        <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
-        Public Class TableAlias
-            Inherits Attribute
-            Public Property Name As String
-            Public Sub New(Name As String)
-                Me.Name = Name
-            End Sub
-        End Class
-        <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
-        Public Class FieldAlias
-            Inherits Attribute
-            Public Property Model As String
-            Public Sub New(Model As String)
-                Me.Model = Model
-            End Sub
-        End Class
-        <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
-        Public Class HideField
-            Inherits Attribute
-            Public Property Model As String
-            Public Sub New(Model As String)
-                Me.Model = Model
-            End Sub
-        End Class
+        '<AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
+        'Public Class TableAlias
+        '    Inherits Attribute
+        '    Public Property Name As String
+        '    Public Sub New(Name As String)
+        '        Me.Name = Name
+        '    End Sub
+        'End Class
+        '<AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
+        'Public Class FieldAlias
+        '    Inherits Attribute
+        '    Public Property Model As String
+        '    Public Sub New(Model As String)
+        '        Me.Model = Model
+        '    End Sub
+        'End Class
+        '<AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
+        'Public Class HideField
+        '    Inherits Attribute
+        '    Public Property Model As String
+        '    Public Sub New(Model As String)
+        '        Me.Model = Model
+        '    End Sub
+        'End Class
 
 
 
@@ -829,7 +803,7 @@ Public Class FilterBuilder
         Next Column
 
         TpTable = New TabPage
-        TpTable.Text = MainTable.DisplayName
+        TpTable.Text = MainTable.TableAlias
         TpTable.BackColor = Color.White
         TpTable.Controls.Add(DgvColumns)
         TcTables.TabPages.Add(TpTable)
@@ -859,7 +833,7 @@ Public Class FilterBuilder
             Next Column
 
             TpTable = New TabPage
-            TpTable.Text = Table.DisplayName
+            TpTable.Text = Table.TableAlias
             TpTable.BackColor = Color.White
             TpTable.Controls.Add(DgvColumns)
             TcTables.TabPages.Add(TpTable)
