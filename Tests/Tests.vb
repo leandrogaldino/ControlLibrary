@@ -1,4 +1,5 @@
-﻿Imports ControlLibrary
+﻿Imports System.Reflection
+Imports ControlLibrary
 
 Public Class Tests
     Private Filter As FilterBuilder
@@ -12,20 +13,18 @@ Public Class Tests
 
     End Class
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Dim a As New Dates
 
+        Dim f As New FilterBuilder2
 
-        PropertyGrid1.SelectedObject = New Order
+        Dim o = GetType(Person).GetProperty("Address")
 
-
+        MsgBox(f.GetShowColumnName(o))
+        MsgBox(f.GetShowColumnAlias(o))
 
 
         Exit Sub
 
-
         Filter = New FilterBuilder(GetType(Order))
-
-
 
         Where = New FilterBuilder.Model.WhereClause
         Where.Column = Filter.RelatedTables(0).Columns(0)

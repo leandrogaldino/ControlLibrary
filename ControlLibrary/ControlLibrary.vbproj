@@ -79,6 +79,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="FilterBuilder.vb" />
+    <Compile Include="FilterBuilder2.vb" />
     <Compile Include="SequencedList.vb" />
     <Compile Include="Utility.vb" />
     <Compile Include="CodeCompiler.vb" />
