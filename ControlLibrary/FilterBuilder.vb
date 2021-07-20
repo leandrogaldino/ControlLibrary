@@ -716,32 +716,6 @@ Public Class FilterBuilder
                 Return DisplayName.Split(".").ElementAt(1)
             End Function
         End Class
-        '<AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
-        'Public Class TableAlias
-        '    Inherits Attribute
-        '    Public Property Name As String
-        '    Public Sub New(Name As String)
-        '        Me.Name = Name
-        '    End Sub
-        'End Class
-        '<AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
-        'Public Class FieldAlias
-        '    Inherits Attribute
-        '    Public Property Model As String
-        '    Public Sub New(Model As String)
-        '        Me.Model = Model
-        '    End Sub
-        'End Class
-        '<AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)>
-        'Public Class HideField
-        '    Inherits Attribute
-        '    Public Property Model As String
-        '    Public Sub New(Model As String)
-        '        Me.Model = Model
-        '    End Sub
-        'End Class
-
-
 
         Public Class Result
             Public Property CommandText As String

@@ -7,19 +7,26 @@ Public Class Tests
     Private Where As FilterBuilder.Model.WhereClause
 
 
-    Public Class Dates
-        Public Property InitialDate As Date = Today.AddDays(-30)
-        Public Property FinalDate As Date = Today
+    Private Function IsCollection(p As Reflection.PropertyInfo) As Boolean
+        If p.PropertyType.Name = "String" Then
+            Return False
+        Else
+            If GetType(IEnumerable).IsAssignableFrom(p.PropertyType) Then
+                Return True
+            Else
+                Return False
+            End If
+        End If
+    End Function
 
-    End Class
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         Dim f As New FilterBuilder2
+        Dim p As PropertyInfo = GetType(Person).GetProperty("Custom")
 
-        Dim o = GetType(Person).GetProperty("Address")
+        MsgBox(f.IsPrimitiveCollection(p))
 
-        MsgBox(f.GetShowColumnName(o))
-        MsgBox(f.GetShowColumnAlias(o))
+
 
 
         Exit Sub

@@ -22,15 +22,7 @@ Partial Class Tests
     'Não o modifique usando o editor de códigos.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.PropertyGrid1 = New System.Windows.Forms.PropertyGrid()
         Me.SuspendLayout()
-        '
-        'PropertyGrid1
-        '
-        Me.PropertyGrid1.Location = New System.Drawing.Point(39, 12)
-        Me.PropertyGrid1.Name = "PropertyGrid1"
-        Me.PropertyGrid1.Size = New System.Drawing.Size(195, 288)
-        Me.PropertyGrid1.TabIndex = 0
         '
         'Tests
         '
@@ -38,7 +30,6 @@ Partial Class Tests
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(692, 361)
-        Me.Controls.Add(Me.PropertyGrid1)
         Me.Font = New System.Drawing.Font("Century Gothic", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "Tests"
@@ -46,6 +37,4 @@ Partial Class Tests
         Me.ResumeLayout(False)
 
     End Sub
-
-    Friend WithEvents PropertyGrid1 As PropertyGrid
 End Class
