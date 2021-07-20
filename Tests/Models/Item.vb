@@ -1,4 +1,4 @@
 ﻿Public Class Item
-    Public Property ID As Long
-    Public Property Name As String
+    Public Property ItemID As Long
+    Public Property ItemName As String
 End Class

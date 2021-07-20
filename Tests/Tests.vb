@@ -2,49 +2,33 @@
 Imports ControlLibrary
 
 Public Class Tests
-    Private Filter As FilterBuilder
+    Private Filter As FilterBuilder2
     Private Person As New Person
     Private Where As FilterBuilder.Model.WhereClause
 
-
-    Private Function IsCollection(p As Reflection.PropertyInfo) As Boolean
-        If p.PropertyType.Name = "String" Then
-            Return False
-        Else
-            If GetType(IEnumerable).IsAssignableFrom(p.PropertyType) Then
-                Return True
-            Else
-                Return False
-            End If
-        End If
-    End Function
-
     Private Sub QueriedBoxTests_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        Dim f As New FilterBuilder2
-        Dim p As PropertyInfo = GetType(Person).GetProperty("Custom")
+        Filter = New FilterBuilder2(GetType(Order))
 
-        MsgBox(f.IsPrimitiveCollection(p))
-
-
+        Filter.ShowDialog()
 
 
         Exit Sub
 
-        Filter = New FilterBuilder(GetType(Order))
+        'Filter = New FilterBuilder(GetType(Order))
 
-        Where = New FilterBuilder.Model.WhereClause
-        Where.Column = Filter.RelatedTables(0).Columns(0)
-        'Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.ID")
-        Where.ComparsionOperator.Display = "Igual"
-        Where.ComparsionOperator.Value = "="
-        Where.LogicalOperator.Display = "e"
-        Where.LogicalOperator.Value = "AND"
-        Where.Parameter.Value = "[ID]"
-        Filter.Wheres.Add(Where)
-        Dim r = Filter.GetResult
-        Debug.Print(r.CommandText)
-        Filter.ShowDialog()
+        'Where = New FilterBuilder.Model.WhereClause
+        'Where.Column = Filter.RelatedTables(0).Columns(0)
+        ''Where.Column = Filter.MainTable.Columns.Find(Function(x) x.Name = "Person.ID")
+        'Where.ComparsionOperator.Display = "Igual"
+        'Where.ComparsionOperator.Value = "="
+        'Where.LogicalOperator.Display = "e"
+        'Where.LogicalOperator.Value = "AND"
+        'Where.Parameter.Value = "[ID]"
+        'Filter.Wheres.Add(Where)
+        'Dim r = Filter.GetResult
+        'Debug.Print(r.CommandText)
+        'Filter.ShowDialog()
 
 
 

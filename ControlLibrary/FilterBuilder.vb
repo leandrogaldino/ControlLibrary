@@ -750,11 +750,9 @@ Public Class FilterBuilder
 
     Private _DataType As String
     Private Sub InitializeComponent()
-
         TcTables = New TabControl
         TcTables.Size = New Size(270, 320)
         TcTables.Location = New Point(12, 12)
-
         DgvColumns = New DataGridView
         DgvColumns.Dock = DockStyle.Fill
         DgvColumns.BorderStyle = BorderStyle.None
@@ -934,6 +932,8 @@ Public Class FilterBuilder
     Private Sub FrmFilter_Load() Handles FrmFilter.Load
         LbxWheres.DataSource = Wheres.ToList
     End Sub
+
+
     Private _ValueLocation As New Point(288, 111)
     Private _value2Location As New Point(288, 158)
     Private _AndLocation As New Point(288, 140)
@@ -943,8 +943,6 @@ Public Class FilterBuilder
     Private _AddLocation As New Point(288, 167)
     Private _AddLocation2 As New Point(288, 214)
     Private _DescriptionLocation As New Point(288, 313)
-
-
 
     Private WithEvents FrmFilter As Form
     Private WithEvents TcTables As TabControl
