@@ -13,6 +13,8 @@ Public Class Tests
         Filter.ShowDialog()
 
 
+        DataGridView1.Rows.Add("Linha Teste")
+
         Exit Sub
 
         'Filter = New FilterBuilder(GetType(Order))
@@ -71,6 +73,9 @@ Public Class Tests
         'MsgBox(r.CommandText)
     End Sub
 
-
+    Private Sub DataGridView1_CellMouseDoubleClick(sender As Object, e As DataGridViewCellMouseEventArgs) Handles DataGridView1.CellMouseDoubleClick
+        DataGridView1.SelectedRows(0).DefaultCellStyle.SelectionBackColor = Color.Black
+        DataGridView1.SelectedRows(0).DefaultCellStyle.SelectionForeColor = Color.White
+    End Sub
 End Class
 

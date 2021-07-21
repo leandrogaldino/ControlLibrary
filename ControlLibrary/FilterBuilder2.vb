@@ -8,7 +8,7 @@ Public Class FilterBuilder2
     End Sub
     Private Sub LoadFilter(ObjType As Type, Optional IsRelatedTable As Boolean = False, Optional PropertyName As String = Nothing,
                            Optional IsChild As Boolean = False, Optional ShowColumnName As String = Nothing,
-                           Optional ShowColumnAlias As String = Nothing)
+                           Optional ShowColumnAlias As String = Nothing, Optional HideColumns As List(Of String) = Nothing)
         Dim Table As New Model.Table
         Dim Column As Model.Column
         Table.TableName = ObjType.Name
@@ -16,8 +16,17 @@ Public Class FilterBuilder2
         Table.ShowColumnNameInObject = ShowColumnName
         Table.ShowColumnAliasInObject = ShowColumnAlias
         For Each p As PropertyInfo In ObjType.GetProperties
+
+            'Verifica se a propriedade em sí é pra ser oculta inteira (sem passar parametro para o atributo HideColumn).
+            'Caso a propriedade tenha o atributo entao pula para a próxima iteração, ignorando a propriedade
+            If GetHiddenColumns(p) IsNot Nothing AndAlso GetHiddenColumns(p).Count = 0 Then Continue For
+
+
             If Not IsCollection(p) Then
                 If GetPrimitiveTypes.Contains(p.PropertyType.Name) Then
+                    If HideColumns IsNot Nothing AndAlso HideColumns.Contains(p.Name) Then
+                        Continue For
+                    End If
                     Column = New Model.Column With {
                         .Table = Table,
                         .ColumnName = p.Name,
@@ -26,9 +35,10 @@ Public Class FilterBuilder2
                         .ColumnTypeAlias = GetColumnTypeAlias(p.PropertyType.Name)
                     }
                     Table.Columns.Add(Column)
+
                 Else
                     If Not IsChild Then
-                        LoadFilter(p.PropertyType, True, GetColumnAlias(p), True, GetShowColumnName(p), GetShowColumnAlias(p))
+                        LoadFilter(p.PropertyType, True, GetColumnAlias(p), True, GetShowColumnName(p), GetShowColumnAlias(p), GetHiddenColumns(p))
                     Else
                         IsChild = False
                     End If
@@ -100,26 +110,35 @@ Public Class FilterBuilder2
             End If
         End If
     End Function
-    'Retorna o valor do atributo ShowColumn na propriedade (ColumnName).
-    Private Function GetShowColumnName(p As Reflection.PropertyInfo) As String
+    Private Function GetHiddenColumns(p As PropertyInfo) As List(Of String)
         For Each Attr In p.GetCustomAttributes(True)
-            If Attr.GetType Is GetType(Model.Attributes.ShowColumn) Then
-                Return CType(Attr, Model.Attributes.ShowColumn).ColumnName
+            If Attr.GetType Is GetType(Model.Attributes.HideColumnInFilter) Then
+                Return CType(Attr, Model.Attributes.HideColumnInFilter).ColumnsInsideThis.ToList
+            End If
+        Next
+        Return Nothing
+    End Function
+
+    'Retorna o valor do atributo ShowColumn na propriedade (ColumnName).
+    Private Function GetShowColumnName(p As PropertyInfo) As String
+        For Each Attr In p.GetCustomAttributes(True)
+            If Attr.GetType Is GetType(Model.Attributes.ShowColumnInResult) Then
+                Return CType(Attr, Model.Attributes.ShowColumnInResult).ColumnName
             End If
         Next
         Return Nothing
     End Function
     'Retorna o valor do atributo ShowColumn na propriedade (ColumnAlias).
-    Private Function GetShowColumnAlias(p As Reflection.PropertyInfo) As String
+    Private Function GetShowColumnAlias(p As PropertyInfo) As String
         For Each Attr In p.GetCustomAttributes(True)
-            If Attr.GetType Is GetType(Model.Attributes.ShowColumn) Then
-                Return CType(Attr, Model.Attributes.ShowColumn).ColumnAlias
+            If Attr.GetType Is GetType(Model.Attributes.ShowColumnInResult) Then
+                Return CType(Attr, Model.Attributes.ShowColumnInResult).ColumnAlias
             End If
         Next
         Return Nothing
     End Function
     'Retorna o valor do atributo ColumnAlias na propriedade.
-    Private Function GetColumnAlias(p As Reflection.PropertyInfo) As String
+    Private Function GetColumnAlias(p As PropertyInfo) As String
         For Each Attr In p.GetCustomAttributes(True)
             If Attr.GetType Is GetType(Model.Attributes.ColumnAlias) Then
                 Return CType(Attr, Model.Attributes.ColumnAlias).Value
@@ -175,7 +194,7 @@ Public Class FilterBuilder2
     Private WithEvents CbxOperador As ComboBox
     Private WithEvents LblValue As Label
     Private WithEvents LblValue2 As Label
-    Private WithEvents LbxWheres As ListBox
+    Private WithEvents DgvWheres As DataGridView
     Private WithEvents PnDgvWheres As Panel
     Private WithEvents TsBar As ToolStrip
     Private WithEvents BtnDelete As ToolStripButton
@@ -191,6 +210,8 @@ Public Class FilterBuilder2
     Private WithEvents ConstructorLabel As Label
     Private WithEvents ConstructorButton As Button
     Private WithEvents ConstructorToggle As ToggleButton
+
+
     Private Class CustomToolstripRender
         Inherits ToolStripSystemRenderer
         Public Sub New()
@@ -218,12 +239,11 @@ Public Class FilterBuilder2
     End Enum
 
     Private _DataType As String
-    Private Sub BtnAdd_TextChanged(sender As Object, e As EventArgs) Handles TxtValue1.TextChanged, TxtValue2.TextChanged
+    Private _ModWhereIndex As Integer
+    Private Sub Values_TextChanged(sender As Object, e As EventArgs) Handles TxtValue1.TextChanged, TxtValue2.TextChanged
         Dim Dgv As DataGridView = TcTables.TabPages(TcTables.SelectedIndex).Controls.OfType(Of DataGridView).First
         Dim Column As Model.Column
         Column = CType(Dgv.SelectedRows(0).Cells(0).Value, Model.Column)
-
-
 
 
 
@@ -259,15 +279,11 @@ Public Class FilterBuilder2
         Dim Where As New Model.WhereClause
         Where.Column = CType(Dgv.SelectedRows(0).Cells(0).Value, Model.Column)
         Where.RelationalOperator.Value = CbxOperador.SelectedValue
-
         Where.LogicalOperator.Value = If(RbAnd.Checked, "AND", "OR")
-
         Where.Parameter.Value = TxtValue1.Text
-
         If CbxOperador.SelectedValue = "BETWEEN" Then
             Where.Parameter2.Value = TxtValue2.Text
         End If
-
         If Where.RelationalOperator.Value = "BETWEEN" Then
             If Where.Column.ColumnType = "Date" Then
                 If Where.Parameter.Value = " /  /" Then
@@ -278,11 +294,10 @@ Public Class FilterBuilder2
                 End If
             End If
         End If
-
-
         Wheres.Add(Where)
-
-        LbxWheres.DataSource = Wheres.ToList
+        FillDgvWheres()
+        TxtValue1.Text = Nothing
+        TxtValue2.Text = Nothing
     End Sub
 
     Private Sub CbxOperador_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CbxOperador.SelectedIndexChanged
@@ -308,7 +323,8 @@ Public Class FilterBuilder2
             RbOr.Location = _OrLocation
             BtnAdd.Location = _AddLocation
         End If
-
+        TxtValue1.Text = Nothing
+        TxtValue2.Text = Nothing
     End Sub
 
     Private Sub TcTables_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TcTables.SelectedIndexChanged
@@ -389,6 +405,7 @@ Public Class FilterBuilder2
         DgvColumns.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
         DgvColumns.BackgroundColor = Color.White
         DgvColumns.CellBorderStyle = DataGridViewCellBorderStyle.None
+        DgvColumns.MultiSelect = False
         AddHandler DgvColumns.SelectionChanged, AddressOf DgvColumns_SelectionChanged
         For Each Column In MainTable.Columns
             DgvColumns.Rows.Add(Column)
@@ -417,6 +434,7 @@ Public Class FilterBuilder2
             DgvColumns.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             DgvColumns.BackgroundColor = Color.White
             DgvColumns.CellBorderStyle = DataGridViewCellBorderStyle.None
+            DgvColumns.MultiSelect = False
             AddHandler DgvColumns.SelectionChanged, AddressOf DgvColumns_SelectionChanged
             For Each Column In Table.Columns
                 DgvColumns.Rows.Add(Column)
@@ -484,9 +502,22 @@ Public Class FilterBuilder2
         LblDescription.Location = _DescriptionLocation
         LblDescription.ForeColor = Color.DimGray
 
-        LbxWheres = New ListBox
-        LbxWheres.Dock = DockStyle.Fill
-        LbxWheres.BackColor = Color.White
+        DgvWheres = New DataGridView
+        DgvWheres.AllowUserToAddRows = False
+        DgvWheres.AllowUserToDeleteRows = False
+        DgvWheres.AllowUserToResizeColumns = False
+        DgvWheres.AllowUserToResizeRows = False
+        DgvWheres.RowHeadersVisible = False
+        DgvWheres.ColumnHeadersVisible = False
+        DgvWheres.Columns.Add("Where", "Where")
+        DgvWheres.ReadOnly = True
+        DgvWheres.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        DgvWheres.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        DgvWheres.Dock = DockStyle.Fill
+        DgvWheres.BackColor = Color.White
+        DgvWheres.BackgroundColor = Color.White
+        DgvWheres.CellBorderStyle = DataGridViewCellBorderStyle.None
+        DgvWheres.MultiSelect = False
 
         BtnDelete = New ToolStripButton
         BtnDelete.DisplayStyle = ToolStripItemDisplayStyle.Text
@@ -508,7 +539,7 @@ Public Class FilterBuilder2
         PnDgvWheres.BackColor = Color.White
         PnDgvWheres.Location = New Point(12, 339)
         PnDgvWheres.Size = New Size(415, 152)
-        PnDgvWheres.Controls.AddRange({LbxWheres, TsBar})
+        PnDgvWheres.Controls.AddRange({DgvWheres, TsBar})
 
         BtnClose = New Button
         BtnClose.Text = "Fechar"
@@ -548,8 +579,40 @@ Public Class FilterBuilder2
 
     End Sub
 
+    Private Sub DgvWheres_CellMouseDoubleClick(sender As Object, e As DataGridViewCellMouseEventArgs) Handles DgvWheres.CellMouseDoubleClick
+        _ModWhereIndex = Wheres.IndexOf(DgvWheres.SelectedRows(0).Tag)
+        DgvWheres.SelectedRows(0).DefaultCellStyle.SelectionBackColor = Color.Black
+        DgvWheres.SelectedRows(0).DefaultCellStyle.SelectionForeColor = Color.White
+
+
+        otimizar codigo e continuar para carregar os operadores.
+        TcTables.SelectedTab = TcTables.TabPages.Cast(Of TabPage).FirstOrDefault(Function(x) x.Text = Wheres(_ModWhereIndex).Column.Table.TableAlias)
+
+        Dim dgv As DataGridView = TcTables.SelectedTab.Controls.OfType(Of DataGridView).First
+
+        For Each r As DataGridViewRow In dgv.Rows
+            If r.Cells(0).Value Is Wheres(_ModWhereIndex).Column Then
+                r.Cells(0).Selected = True
+            End If
+
+
+        Next
+
+
+
+
+
+        BtnAdd.Text = "Alterar"
+    End Sub
+    Private Sub FillDgvWheres()
+        DgvWheres.Rows.Clear()
+        For Each Where In Wheres
+            DgvWheres.Rows.Add(Where.ToString)
+            DgvWheres.Rows(DgvWheres.Rows.Count - 1).Tag = Where
+        Next Where
+    End Sub
     Private Sub FrmFilter_Load() Handles FrmFilter.Load
-        LbxWheres.DataSource = Wheres.ToList
+        FillDgvWheres()
     End Sub
     Public Class Model
         Public Class Attributes
@@ -570,13 +633,27 @@ Public Class FilterBuilder2
                 End Sub
             End Class
             <AttributeUsage(AttributeTargets.Property)>
-            Public Class ShowColumn
+            Public Class ShowColumnInResult
                 Inherits Attribute
                 Friend ColumnName As String
                 Friend ColumnAlias As String
                 Public Sub New(ColumnName As String, ColumnAlias As String)
                     Me.ColumnName = ColumnName
                     Me.ColumnAlias = ColumnAlias
+                End Sub
+            End Class
+            <AttributeUsage(AttributeTargets.Property)>
+            Public Class HideColumnInFilter
+                Inherits Attribute
+                Friend ColumnsInsideThis() As String
+                Public Sub New()
+                    ColumnsInsideThis = {}
+                End Sub
+                Public Sub New(ColumnsInsideThis() As String)
+                    Me.ColumnsInsideThis = ColumnsInsideThis
+                End Sub
+                Public Sub New(ColumnInsideThis As String)
+                    ColumnsInsideThis = {ColumnInsideThis}
                 End Sub
             End Class
         End Class
@@ -652,9 +729,9 @@ Public Class FilterBuilder2
                         p2 = " a "
                 End Select
                 If RelationalOperator.Value <> "BETWEEN" Then
-                    s = Column.ColumnAlias & p1 & RelationalOperator.Display & p2 & " " & If(Parameter.Value = Nothing, "{Vazio}", Parameter.Value) & vbTab & " " & LogicalOperator.Display
+                    s = Column.Table.TableAlias & " " & Column.ColumnAlias & p1 & RelationalOperator.Display & p2 & " " & If(Parameter.Value = Nothing, "{Vazio}", Parameter.Value) & vbTab & " " & LogicalOperator.Display
                 Else
-                    s = Column.ColumnAlias & " Está " & RelationalOperator.Display & " " & Parameter.Value & " e " & Parameter2.Value & vbTab & " " & LogicalOperator.Display
+                    s = Column.Table.TableAlias & " " & Column.ColumnAlias & " Está " & RelationalOperator.Display & " " & Parameter.Value & " e " & Parameter2.Value & vbTab & " " & LogicalOperator.Display
                 End If
                 Return s
             End Function
